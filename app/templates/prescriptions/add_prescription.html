@@ -1,0 +1,193 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="container-fluid">
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+
+        <div>
+
+            <h2 class="fw-bold">
+
+                Add Prescription
+
+            </h2>
+
+            <p class="text-muted">
+
+                Create a new patient prescription.
+
+            </p>
+
+        </div>
+
+        <a
+            href="{{ url_for('prescription.prescriptions') }}"
+            class="btn btn-secondary">
+
+            <i class="bi bi-arrow-left"></i>
+
+            Back
+
+        </a>
+
+    </div>
+
+    <div class="card shadow border-0">
+
+        <div class="card-body">
+
+            <form method="POST">
+
+                <div class="row">
+
+                    <div class="col-md-6 mb-3">
+
+                        <label class="form-label">
+
+                            Patient
+
+                        </label>
+
+                        <select
+                            name="patient_id"
+                            class="form-select"
+                            required>
+
+                            <option value="">
+
+                                Select Patient
+
+                            </option>
+
+                            {% for patient in patients %}
+
+                            <option value="{{ patient.id }}">
+
+                                {{ patient.full_name }}
+
+                            </option>
+
+                            {% endfor %}
+
+                        </select>
+
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+
+                        <label class="form-label">
+
+                            Doctor
+
+                        </label>
+
+                        <select
+                            name="doctor_id"
+                            class="form-select"
+                            required>
+
+                            <option value="">
+
+                                Select Doctor
+
+                            </option>
+
+                            {% for doctor in doctors %}
+
+                            <option value="{{ doctor.id }}">
+
+                                {{ doctor.full_name }}
+
+                            </option>
+
+                            {% endfor %}
+
+                        </select>
+
+                    </div>
+
+                </div>
+
+                <div class="mb-3">
+
+                    <label class="form-label">
+
+                        Diagnosis
+
+                    </label>
+
+                    <textarea
+                        name="diagnosis"
+                        class="form-control"
+                        rows="4"
+                        required
+                        placeholder="Enter diagnosis"></textarea>
+
+                </div>
+
+                <div class="mb-3">
+
+                    <label class="form-label">
+
+                        Medicines
+
+                    </label>
+
+                    <textarea
+                        name="medicines"
+                        class="form-control"
+                        rows="5"
+                        required
+                        placeholder="Example:
+
+Paracetamol 500mg - 1 Tablet - Twice Daily - 5 Days
+
+Amoxicillin 625mg - 1 Tablet - Three Times Daily - 7 Days"></textarea>
+
+                </div>
+
+                <div class="mb-4">
+
+                    <label class="form-label">
+
+                        Notes
+
+                    </label>
+
+                    <textarea
+                        name="notes"
+                        class="form-control"
+                        rows="3"
+                        placeholder="Additional instructions..."></textarea>
+
+                </div>
+
+                <button
+                    type="submit"
+                    class="btn btn-success">
+
+                    <i class="bi bi-check-circle"></i>
+
+                    Save Prescription
+
+                </button>
+
+                <a
+                    href="{{ url_for('prescription.prescriptions') }}"
+                    class="btn btn-secondary">
+
+                    Cancel
+
+                </a>
+
+            </form>
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}

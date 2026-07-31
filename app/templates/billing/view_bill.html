@@ -1,0 +1,116 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<h2>Bill Details</h2>
+
+<hr>
+
+<div class="card shadow">
+
+    <div class="card-body">
+
+        <table class="table table-bordered">
+
+            <tr>
+
+                <th width="250">Bill ID</th>
+
+                <td>{{ bill.id }}</td>
+
+            </tr>
+
+            <tr>
+
+                <th>Patient</th>
+
+                <td>{{ bill.patient.full_name }}</td>
+
+            </tr>
+
+            <tr>
+
+                <th>Consultation Fee</th>
+
+                <td>SAR {{ "%.2f"|format(bill.consultation_fee) }}</td>
+
+            </tr>
+
+            <tr>
+
+                <th>Medicine Charges</th>
+
+                <td>SAR {{ "%.2f"|format(bill.medicine_charge) }}</td>
+
+            </tr>
+
+            <tr>
+
+                <th>Other Charges</th>
+
+                <td>SAR {{ "%.2f"|format(bill.other_charge) }}</td>
+
+            </tr>
+
+            <tr class="table-success">
+
+                <th>Total Amount</th>
+
+                <th>SAR {{ "%.2f"|format(bill.total_amount) }}</th>
+
+            </tr>
+
+            <tr>
+
+                <th>Payment Status</th>
+
+                <td>
+
+                    {% if bill.payment_status == "Paid" %}
+
+                        <span class="badge bg-success">
+
+                            Paid
+
+                        </span>
+
+                    {% else %}
+
+                        <span class="badge bg-warning text-dark">
+
+                            Unpaid
+
+                        </span>
+
+                    {% endif %}
+
+                </td>
+
+            </tr>
+
+            <tr>
+
+                <th>Created</th>
+
+                <td>
+
+                    {{ bill.created_at.strftime("%d-%m-%Y %I:%M %p") }}
+
+                </td>
+
+            </tr>
+
+        </table>
+
+        <a href="{{ url_for('billing.bills') }}"
+           class="btn btn-secondary">
+
+            Back
+
+        </a>
+
+    </div>
+
+</div>
+
+{% endblock %}

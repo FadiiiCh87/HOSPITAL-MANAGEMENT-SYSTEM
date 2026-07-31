@@ -1,0 +1,211 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+
+    <div>
+
+        <h2 class="fw-bold mb-1">
+
+            📅 Add Appointment
+
+        </h2>
+
+        <p class="text-muted mb-0">
+
+            Schedule a new appointment for a patient.
+
+        </p>
+
+    </div>
+
+    <a
+    href="{{ url_for('appointment.appointments') }}"
+    class="btn btn-outline-secondary">
+
+        ← Back
+
+    </a>
+
+</div>
+
+<div class="card shadow-sm border-0">
+
+    <div class="card-body p-4">
+
+        <form method="POST">
+
+            <h5 class="border-bottom pb-2 mb-3 text-primary">
+
+    👥 Patient & Doctor Information
+
+</h5>
+
+<div class="row">
+
+    <div class="col-md-6">
+
+        <label class="form-label fw-semibold">
+
+    Patient <span class="text-danger">*</span>
+
+</label>
+
+        <select
+        name="patient_id"
+        class="form-select"
+        required>
+
+            <option value="">Select Patient</option>
+
+            {% for patient in patients %}
+
+            <option value="{{ patient.id }}">
+
+                {{ patient.full_name }}
+
+            </option>
+
+            {% endfor %}
+
+        </select>
+
+    </div>
+
+    <div class="col-md-6">
+
+        <label class="form-label fw-semibold">
+
+    Doctor <span class="text-danger">*</span>
+
+</label>
+
+        <select
+        name="doctor_id"
+        class="form-select"
+        required>
+
+            <option value="">Select Doctor</option>
+
+            {% for doctor in doctors %}
+
+            <option value="{{ doctor.id }}">
+    {{ doctor.full_name }}
+    {% if doctor.department %}
+        ({{ doctor.department.department_name if doctor.department.department_name is defined else doctor.department.name }})
+    {% endif %}
+</option>
+
+            {% endfor %}
+
+        </select>
+
+    </div>
+
+</div>
+
+<br>
+
+<div class="row">
+<h5 class="border-bottom pb-2 mt-4 mb-3 text-primary">
+
+    📅 Appointment Details
+
+</h5>
+    <div class="col-md-6">
+
+        <label class="form-label fw-semibold">
+
+    Appointment Date <span class="text-danger">*</span>
+
+</label>
+
+
+        <input
+        type="date"
+        name="appointment_date"
+        class="form-control"
+        required>
+
+    </div>
+
+    <div class="col-md-6">
+
+        <label class="form-label fw-semibold">
+
+            Appointment Time <span class="text-danger">*</span>
+
+        </label>
+
+        <input
+        type="time"
+        name="appointment_time"
+        class="form-control"
+        required>
+<div class="form-text">
+
+    Please select an available time for the doctor.
+
+</div>
+    </div>
+
+</div>
+
+<br>
+
+<div class="mb-3">
+
+    <label class="form-label fw-semibold">
+
+    Reason <span class="text-danger">*</span>
+<div class="form-text">
+
+    Optional: Add symptoms or any additional notes.
+
+</div>
+</label>
+
+    <textarea
+    name="reason"
+    class="form-control"
+    rows="4"
+    placeholder="Enter appointment reason..."></textarea>
+
+</div>
+
+<div class="d-flex justify-content-end gap-2 mt-4">
+
+    <a
+    href="{{ url_for('appointment.appointments') }}"
+    class="btn btn-outline-secondary">
+
+        Cancel
+
+    </a>
+
+    <button
+    type="submit"
+    class="btn btn-success px-4">
+
+        💾 Save Appointment
+
+    </button>
+
+</div>
+
+<a
+href="{{ url_for('appointment.appointments') }}"
+class="btn btn-secondary">
+
+    Cancel
+
+</a>
+
+        </form>
+
+    </div>
+
+</div>
+
+{% endblock %}

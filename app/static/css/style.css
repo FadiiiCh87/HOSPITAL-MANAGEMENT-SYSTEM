@@ -1,0 +1,1235 @@
+body{
+
+background:#f5f7fa;
+
+}
+
+.nav-link{
+
+font-size:16px;
+
+padding:10px;
+
+}
+
+.nav-link:hover{
+
+background:#0d6efd;
+
+border-radius:5px;
+
+}
+
+.card{
+
+border:none;
+
+border-radius:10px;
+
+}
+
+.card h2{
+
+font-weight:bold;
+
+}
+/* =========================================
+   Dashboard V2 Professional Cards
+========================================= */
+
+.card{
+
+    border-radius:18px;
+
+    transition:0.35s ease;
+
+}
+
+.card:hover{
+
+    transform:translateY(-8px);
+
+    box-shadow:0 18px 35px rgba(0,0,0,.18);
+
+}
+
+/* =======================
+   Statistics Cards
+======================= */
+
+.bg-primary{
+
+    background:linear-gradient(135deg,#0d6efd,#3b82f6)!important;
+
+}
+
+.bg-success{
+
+    background:linear-gradient(135deg,#198754,#22c55e)!important;
+
+}
+
+.bg-danger{
+
+    background:linear-gradient(135deg,#dc3545,#ef4444)!important;
+
+}
+
+.bg-warning{
+
+    background:linear-gradient(135deg,#ffc107,#f59e0b)!important;
+
+    color:#000;
+
+}
+
+.bg-info{
+
+    background:linear-gradient(135deg,#0dcaf0,#06b6d4)!important;
+
+}
+
+.bg-secondary{
+
+    background:linear-gradient(135deg,#6c757d,#4b5563)!important;
+
+}
+
+/* =======================
+   Icons
+======================= */
+
+.card i{
+
+    opacity:.85;
+
+    transition:.35s;
+
+}
+
+.card:hover i{
+
+    transform:scale(1.15) rotate(-5deg);
+
+}
+
+/* =======================
+   Dashboard Titles
+======================= */
+
+.card h1{
+
+    font-weight:700;
+
+}
+
+.card small{
+
+    letter-spacing:1px;
+
+    font-size:.85rem;
+
+}
+
+/* =======================
+   Card Header
+======================= */
+
+.card-header{
+
+    border-radius:18px 18px 0 0!important;
+
+    font-weight:600;
+
+}
+
+/* =======================
+   Dashboard Welcome
+======================= */
+
+h2{
+
+    font-weight:700;
+
+}
+/* =====================================
+   Dashboard Final Polish
+===================================== */
+
+body{
+
+    background:#f4f7fc;
+
+}
+
+.card{
+
+    overflow:hidden;
+
+}
+
+.card-header{
+
+    letter-spacing:.5px;
+
+}
+
+.btn{
+
+    border-radius:12px;
+
+    transition:.3s;
+
+}
+
+.btn:hover{
+
+    transform:translateY(-2px);
+
+}
+
+.table{
+
+    border-radius:12px;
+
+    overflow:hidden;
+
+}
+
+.table thead{
+
+    letter-spacing:.4px;
+
+}
+
+.text-muted{
+
+    font-size:.95rem;
+
+}
+
+@media (max-width:768px){
+
+    .card h1{
+
+        font-size:2rem;
+
+    }
+
+    .card{
+
+        margin-bottom:15px;
+
+    }
+
+}
+/* ==========================================
+   Invoice Print Layout
+========================================== */
+
+@media print {
+
+    .btn,
+    .navbar,
+    .sidebar,
+    footer {
+
+        display: none !important;
+
+    }
+
+    .card {
+
+        border: none !important;
+
+        box-shadow: none !important;
+
+    }
+
+    body {
+
+        background: white !important;
+
+    }
+
+}
+/* =======================================
+   Professional Print Layout
+======================================= */
+
+@media print {
+
+    @page {
+
+        size: A4;
+        margin: 12mm;
+
+    }
+
+    body{
+
+        background:#fff !important;
+
+    }
+
+    /* Hide Navigation */
+
+    nav,
+    .navbar,
+    .sidebar,
+    .btn,
+    form,
+    .alert{
+
+        display:none !important;
+
+    }
+
+    /* Main Content */
+
+    .main-content{
+
+        width:100% !important;
+        max-width:100% !important;
+
+        margin:0 !important;
+
+        padding:0 !important;
+
+        flex:0 0 100% !important;
+
+    }
+
+    .container-fluid,
+    .row{
+
+        width:100% !important;
+
+        margin:0 !important;
+
+        padding:0 !important;
+
+    }
+
+    /* Cards */
+
+    .card{
+
+        border:1px solid #999 !important;
+
+        box-shadow:none !important;
+
+        margin-bottom:15px !important;
+
+        break-inside:avoid;
+
+    }
+
+    .card-header{
+
+        background:#f8f9fa !important;
+
+        color:#000 !important;
+
+    }
+
+    /* Table */
+
+    table{
+
+        width:100% !important;
+
+        border-collapse:collapse;
+
+    }
+
+    table th,
+    table td{
+
+        border:1px solid #999 !important;
+
+        padding:8px !important;
+
+    }
+
+    /* Badges */
+
+    .badge{
+
+        border:1px solid #555;
+
+        color:#000 !important;
+
+        background:#fff !important;
+
+    }
+
+}
+
+.dashboard-card{
+    border:none;
+    border-radius:18px;
+    overflow:hidden;
+    transition:.3s;
+    box-shadow:0 8px 20px rgba(0,0,0,.08);
+}
+
+.dashboard-card:hover{
+    transform:translateY(-6px);
+    box-shadow:0 16px 30px rgba(0,0,0,.18);
+}
+
+.dashboard-icon{
+    width:60px;
+    height:60px;
+    border-radius:50%;
+    background:rgba(255,255,255,.25);
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    font-size:28px;
+}
+
+.dashboard-number{
+    font-size:34px;
+    font-weight:700;
+}
+
+.dashboard-title{
+    opacity:.9;
+    font-size:15px;
+}
+
+html{
+
+    scroll-behavior:smooth;
+
+}
+
+.dashboard-nav{
+
+    top:70px;
+
+    z-index:999;
+
+    border-radius:15px;
+
+}
+
+.dashboard-nav .nav-link{
+
+    color:#555;
+
+    font-weight:600;
+
+    transition:.25s;
+
+    border-radius:10px;
+
+}
+
+.dashboard-nav .nav-link:hover{
+
+    background:#0d6efd;
+
+    color:white;
+
+}
+
+/* ======================================================
+   Dashboard V3 Header
+====================================================== */
+
+.dashboard-header{
+
+    background:#ffffff;
+
+    border-radius:18px;
+
+    padding:28px;
+
+    margin-bottom:25px;
+
+    box-shadow:0 8px 25px rgba(0,0,0,.08);
+
+}
+
+.dashboard-title{
+
+    font-size:32px;
+
+    font-weight:700;
+
+    margin-bottom:8px;
+
+    color:#1e293b;
+
+}
+
+.dashboard-subtitle{
+
+    color:#64748b;
+
+    font-size:16px;
+
+    margin-bottom:0;
+
+}
+
+.dashboard-clock{
+
+    display:inline-flex;
+
+    align-items:center;
+
+    justify-content:center;
+
+    background:#0d6efd;
+
+    color:#fff;
+
+    padding:12px 22px;
+
+    border-radius:50px;
+
+    font-size:17px;
+
+    font-weight:600;
+
+    min-width:170px;
+
+}
+
+/* ======================================================
+   Dashboard V3 Navigation
+====================================================== */
+
+html{
+
+    scroll-behavior:smooth;
+
+}
+
+.dashboard-nav{
+
+    position:sticky;
+
+    top:15px;
+
+    z-index:999;
+
+    display:flex;
+
+    justify-content:center;
+
+    align-items:center;
+
+    gap:12px;
+
+    flex-wrap:wrap;
+
+    background:#ffffff;
+
+    padding:14px;
+
+    margin-bottom:30px;
+
+    border-radius:18px;
+
+    box-shadow:0 8px 25px rgba(0,0,0,.08);
+
+}
+
+.dashboard-nav a{
+
+    text-decoration:none;
+
+    color:#475569;
+
+    font-weight:600;
+
+    display:flex;
+
+    align-items:center;
+
+    gap:8px;
+
+    padding:10px 18px;
+
+    border-radius:12px;
+
+    transition:.25s;
+
+}
+
+.dashboard-nav a:hover{
+
+    background:#0d6efd;
+
+    color:#ffffff;
+
+    transform:translateY(-2px);
+
+}
+
+.dashboard-nav i{
+
+    font-size:18px;
+
+}
+
+@media(max-width:768px){
+
+.dashboard-nav{
+
+justify-content:flex-start;
+
+overflow-x:auto;
+
+flex-wrap:nowrap;
+
+}
+
+.dashboard-nav a{
+
+min-width:max-content;
+
+}
+
+}
+
+/* ======================================================
+   Dashboard V3 Cards
+====================================================== */
+
+.dashboard-card{
+
+    background:#ffffff;
+
+    border-radius:18px;
+
+    padding:22px;
+
+    display:flex;
+
+    align-items:center;
+
+    gap:18px;
+
+    box-shadow:0 8px 25px rgba(0,0,0,.08);
+
+    transition:.30s;
+
+    height:100%;
+
+}
+
+.dashboard-card:hover{
+
+    transform:translateY(-6px);
+
+    box-shadow:0 15px 35px rgba(0,0,0,.12);
+
+}
+
+.dashboard-icon{
+
+    width:70px;
+
+    height:70px;
+
+    border-radius:18px;
+
+    display:flex;
+
+    align-items:center;
+
+    justify-content:center;
+
+    color:#fff;
+
+    font-size:28px;
+
+}
+
+.dashboard-card small{
+
+    display:block;
+
+    color:#64748b;
+
+    font-size:14px;
+
+    margin-bottom:4px;
+
+}
+
+.dashboard-card h3{
+
+    margin:0;
+
+    font-size:30px;
+
+    font-weight:700;
+
+    color:#1e293b;
+
+}
+
+
+/* ======================================================
+   Dashboard V3 Quick Actions
+====================================================== */
+
+.section-title h4{
+
+    font-weight:700;
+
+    color:#1e293b;
+
+}
+
+.quick-action{
+
+    background:#ffffff;
+
+    border-radius:18px;
+
+    text-decoration:none;
+
+    display:flex;
+
+    flex-direction:column;
+
+    justify-content:center;
+
+    align-items:center;
+
+    padding:25px;
+
+    color:#334155;
+
+    transition:.30s;
+
+    box-shadow:0 8px 20px rgba(0,0,0,.08);
+
+    height:100%;
+
+}
+
+.quick-action:hover{
+
+    background:#0d6efd;
+
+    color:#ffffff;
+
+    transform:translateY(-6px);
+
+}
+
+.quick-action i{
+
+    font-size:34px;
+
+    margin-bottom:12px;
+
+}
+
+.quick-action span{
+
+    font-weight:600;
+
+    text-align:center;
+
+}
+
+
+.dashboard-card{
+
+    color:inherit;
+
+    cursor:pointer;
+
+}
+
+.dashboard-card:hover{
+
+    text-decoration:none;
+
+}
+
+/* ======================================================
+   Today's Summary
+====================================================== */
+
+.summary-card{
+
+    background:#ffffff;
+
+    border-radius:18px;
+
+    padding:28px;
+
+    text-align:center;
+
+    box-shadow:0 8px 25px rgba(0,0,0,.08);
+
+    transition:.30s;
+
+    height:100%;
+
+}
+
+.summary-card:hover{
+
+    transform:translateY(-5px);
+
+    box-shadow:0 15px 35px rgba(0,0,0,.12);
+
+}
+
+.summary-card i{
+
+    font-size:38px;
+
+    margin-bottom:15px;
+
+}
+
+.summary-card h3{
+
+    font-size:30px;
+
+    font-weight:700;
+
+    color:#1e293b;
+
+    margin-bottom:8px;
+
+}
+
+.summary-card p{
+
+    margin:0;
+
+    color:#64748b;
+
+    font-weight:500;
+
+}
+
+/* ======================================================
+   Recent Activity
+====================================================== */
+
+.activity-card{
+
+    background:#ffffff;
+
+    border-radius:18px;
+
+    box-shadow:0 8px 25px rgba(0,0,0,.08);
+
+    padding:20px;
+
+    height:100%;
+
+}
+
+.activity-card h5{
+
+    margin-bottom:18px;
+
+    font-weight:700;
+
+    color:#1e293b;
+
+}
+
+.activity-card .list-group-item{
+
+    border:none;
+
+    padding:12px 0;
+
+}
+
+
+/* ======================================================
+   Alerts & Notifications
+====================================================== */
+
+.alert-card{
+
+    background:#fff;
+
+    border-radius:18px;
+
+    padding:22px;
+
+    box-shadow:0 8px 25px rgba(0,0,0,.08);
+
+    border-left:5px solid;
+
+    height:100%;
+
+}
+
+.border-warning{
+
+    border-color:#ffc107;
+
+}
+
+.border-danger{
+
+    border-color:#dc3545;
+
+}
+
+.border-primary{
+
+    border-color:#0d6efd;
+
+}
+
+.alert-card h5{
+
+    margin-bottom:18px;
+
+    font-weight:700;
+
+}
+
+.alert-card .list-group-item{
+
+    border:none;
+
+    padding:10px 0;
+
+}
+
+.pending-counter{
+
+    font-size:48px;
+
+    font-weight:700;
+
+    color:#0d6efd;
+
+    text-align:center;
+
+    margin:20px 0;
+
+}
+
+
+/* ==========================================
+Revenue Chart
+========================================== */
+
+.chart-card{
+
+    background:#fff;
+
+    border-radius:18px;
+
+    padding:25px;
+
+    box-shadow:0 8px 25px rgba(0,0,0,.08);
+
+}
+
+.chart-card canvas{
+
+    width:100% !important;
+
+    height:420px !important;
+
+}
+.chart-card{
+
+    min-height:500px;
+
+}
+
+/* ==========================================
+   Sidebar V4
+========================================== */
+
+.sidebar{
+
+    width:260px;
+
+    background:linear-gradient(
+        180deg,
+        #0f172a,
+        #1e293b
+    );
+
+    border-right:1px solid rgba(255,255,255,.08);
+
+    box-shadow:
+        0 10px 35px rgba(0,0,0,.25);
+
+    overflow-y:auto;
+
+}
+
+/* Logo */
+
+.sidebar h3{
+
+    letter-spacing:1px;
+
+}
+
+.sidebar small{
+
+    color:#b6c2d2;
+
+}
+
+/* Menu */
+
+.sidebar .nav-link{
+
+    color:#d8e2ef !important;
+
+    border-radius:12px;
+
+    margin:4px 0;
+
+    padding:11px 14px;
+
+    transition:.25s;
+
+    font-weight:500;
+
+}
+
+/* Hover */
+
+.sidebar .nav-link:hover{
+
+    background:#2563eb;
+
+    color:white !important;
+
+    transform:translateX(6px);
+
+}
+
+/* Icons */
+
+.sidebar .nav-link i{
+
+    width:22px;
+
+    text-align:center;
+
+}
+
+/* Section Heading */
+
+.sidebar .text-uppercase{
+
+    font-size:11px;
+
+    letter-spacing:1px;
+
+    color:#94a3b8 !important;
+
+    padding-left:10px;
+
+}
+
+/* Logout */
+
+.sidebar .text-danger:hover{
+
+    background:#dc3545;
+
+    color:white !important;
+
+}
+
+/* Scroll */
+
+.sidebar::-webkit-scrollbar{
+
+    width:6px;
+
+}
+
+.sidebar::-webkit-scrollbar-thumb{
+
+    background:#475569;
+
+    border-radius:10px;
+
+}
+
+/* ==========================================
+   Main Layout
+========================================== */
+
+.main-content{
+
+    margin-left:260px;
+
+    min-height:100vh;
+
+    background:#f4f7fb;
+
+    transition:.3s;
+
+}
+
+/* Fixed Sidebar */
+
+.sidebar{
+
+    position:fixed;
+
+    left:0;
+
+    top:0;
+
+    bottom:0;
+
+    z-index:1000;
+
+}
+
+/* Navbar Fix */
+
+.navbar{
+
+    margin-left:260px;
+
+}
+
+/* Mobile */
+
+@media(max-width:992px){
+
+.sidebar{
+
+    position:relative;
+
+    width:100%;
+
+    height:auto;
+
+}
+
+.main-content{
+
+    margin-left:0;
+
+}
+
+.navbar{
+
+    margin-left:0;
+
+}
+
+}
+
+/* ==========================================
+   Sidebar Active Menu
+========================================== */
+
+.sidebar .nav-link.active{
+
+    background:linear-gradient(
+        135deg,
+        #2563eb,
+        #3b82f6
+    );
+
+    color:#fff !important;
+
+    border-radius:12px;
+
+    font-weight:600;
+
+    box-shadow:
+        0 8px 18px rgba(37,99,235,.35);
+
+}
+
+.sidebar .nav-link.active i{
+
+    color:#fff;
+
+}
+
+/* ==========================================
+   Hover Glow
+========================================== */
+
+.sidebar .nav-link:hover{
+
+    box-shadow:
+        0 8px 20px rgba(37,99,235,.25);
+
+}
+
+/* ==========================================
+   Logo
+========================================== */
+
+.sidebar h3{
+
+    color:#38bdf8;
+
+}
+
+/* ==========================================
+   Section Divider
+========================================== */
+
+.sidebar hr{
+
+    opacity:.15;
+
+}
+
+/* ==========================================
+   Animation
+========================================== */
+
+.sidebar .nav-link{
+
+    transition:
+
+        all .25s ease;
+
+}
+
+/* ==========================================
+   Nice Scrollbar
+========================================== */
+
+.sidebar::-webkit-scrollbar{
+
+    width:7px;
+
+}
+
+.sidebar::-webkit-scrollbar-thumb{
+
+    background:#334155;
+
+    border-radius:20px;
+
+}
+
+.sidebar::-webkit-scrollbar-track{
+
+    background:transparent;
+
+}

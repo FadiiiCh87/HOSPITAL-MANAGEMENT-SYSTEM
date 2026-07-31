@@ -1,0 +1,174 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<h2>Add New Doctor</h2>
+
+<hr>
+
+<form method="POST" enctype="multipart/form-data">
+
+<div class="row">
+
+<div class="col-md-6">
+
+<label class="form-label">
+
+Full Name
+
+</label>
+
+<input
+type="text"
+name="full_name"
+class="form-control"
+required>
+
+</div>
+
+<div class="col-md-6">
+
+<label class="form-label">
+
+Department
+
+</label>
+
+<select
+name="department_id"
+class="form-select"
+required>
+
+<option value="">
+
+Select Department
+
+</option>
+
+{% for department in departments %}
+
+<option value="{{ department.id }}">
+
+{{ department.name }}
+
+</option>
+
+{% endfor %}
+
+</select>
+
+</div>
+
+</div>
+
+<br>
+
+<div class="row">
+
+<div class="col-md-6">
+
+<label class="form-label">
+
+Phone
+
+</label>
+
+<input
+type="text"
+name="phone"
+class="form-control">
+
+</div>
+
+<div class="col-md-6">
+
+<label class="form-label">
+
+Email
+
+</label>
+
+<input
+type="email"
+name="email"
+class="form-control">
+
+</div>
+
+</div>
+
+<br>
+
+<div class="row">
+
+<div class="col-md-6">
+
+<label class="form-label">
+
+Gender
+
+</label>
+
+<select
+name="gender"
+class="form-select">
+
+<option>Male</option>
+
+<option>Female</option>
+
+</select>
+
+</div>
+
+<div class="col-md-6">
+
+<label class="form-label">
+
+Experience
+
+</label>
+
+<input
+type="number"
+name="experience"
+class="form-control">
+
+</div>
+
+</div>
+
+<br>
+
+<label class="form-label">
+
+Doctor Photo
+
+</label>
+
+<input
+type="file"
+name="photo"
+class="form-control">
+
+<br>
+
+<button
+type="submit"
+class="btn btn-primary">
+
+Save Doctor
+
+</button>
+
+<a
+href="{{ url_for('doctor.doctors') }}"
+class="btn btn-secondary">
+
+Cancel
+
+</a>
+
+</form>
+
+{% endblock %}

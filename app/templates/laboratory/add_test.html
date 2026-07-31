@@ -1,0 +1,197 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="container-fluid">
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+
+        <div>
+
+            <h2 class="fw-bold">
+
+                Add Laboratory Test
+
+            </h2>
+
+            <p class="text-muted">
+
+                Create a new laboratory test.
+
+            </p>
+
+        </div>
+
+        <a
+            href="{{ url_for('laboratory.laboratory') }}"
+            class="btn btn-secondary">
+
+            <i class="bi bi-arrow-left"></i>
+
+            Back
+
+        </a>
+
+    </div>
+
+    <div class="card shadow border-0">
+
+        <div class="card-body">
+
+            <form method="POST">
+
+                <div class="row">
+
+                    <div class="col-md-6 mb-3">
+
+                        <label class="form-label">
+
+                            Test Name
+
+                        </label>
+
+                        <input
+                            type="text"
+                            name="test_name"
+                            class="form-control"
+                            required>
+
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+
+                        <label class="form-label">
+
+                            Category
+
+                        </label>
+
+                        <select
+                            name="category"
+                            class="form-select"
+                            required>
+
+                            <option value="">
+
+                                Select Category
+
+                            </option>
+
+                            <option>
+
+                                Blood Test
+
+                            </option>
+
+                            <option>
+
+                                Urine Test
+
+                            </option>
+
+                            <option>
+
+                                X-Ray
+
+                            </option>
+
+                            <option>
+
+                                Ultrasound
+
+                            </option>
+
+                            <option>
+
+                                MRI
+
+                            </option>
+
+                            <option>
+
+                                CT Scan
+
+                            </option>
+
+                            <option>
+
+                                ECG
+
+                            </option>
+
+                            <option>
+
+                                Other
+
+                            </option>
+
+                        </select>
+
+                    </div>
+
+                </div>
+
+                <div class="row">
+
+                    <div class="col-md-6 mb-3">
+
+                        <label class="form-label">
+
+                            Price
+
+                        </label>
+
+                        <input
+                            type="number"
+                            step="0.01"
+                            min="0"
+                            name="price"
+                            class="form-control"
+                            required>
+
+                    </div>
+
+                </div>
+
+                <div class="mb-3">
+
+                    <label class="form-label">
+
+                        Description
+
+                    </label>
+
+                    <textarea
+                        name="description"
+                        rows="4"
+                        class="form-control"></textarea>
+
+                </div>
+
+                <button
+                    type="submit"
+                    class="btn btn-success">
+
+                    <i class="bi bi-check-circle"></i>
+
+                    Save Test
+
+                </button>
+
+                <a
+                    href="{{ url_for('laboratory.laboratory') }}"
+                    class="btn btn-secondary">
+
+                    Cancel
+
+                </a>
+
+            </form>
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}

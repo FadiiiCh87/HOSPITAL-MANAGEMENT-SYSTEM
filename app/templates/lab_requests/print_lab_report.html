@@ -1,0 +1,186 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="container-fluid report-area">
+
+    <div class="d-flex justify-content-between align-items-center mb-4 no-print">
+
+        <h2 class="fw-bold">
+
+            Laboratory Report
+
+        </h2>
+
+        <button
+            onclick="window.print()"
+            class="btn btn-primary">
+
+            <i class="bi bi-printer-fill"></i>
+
+            Print Report
+
+        </button>
+
+    </div>
+
+    <div class="card shadow border-0">
+
+        <div class="card-body p-5">
+
+            <div class="text-center mb-4">
+
+                <h2 class="fw-bold">
+
+                    Hospital Management System
+
+                </h2>
+
+                <h4 class="text-primary">
+
+                    Laboratory Report
+
+                </h4>
+
+                <hr>
+
+            </div>
+
+            <div class="row mb-4">
+
+                <div class="col-md-6">
+
+                    <strong>Patient:</strong>
+
+                    {{ request_data.patient.full_name }}
+
+                </div>
+
+                <div class="col-md-6">
+
+                    <strong>Doctor:</strong>
+
+                    {{ request_data.doctor.full_name }}
+
+                </div>
+
+            </div>
+
+            <div class="row mb-4">
+
+                <div class="col-md-6">
+
+                    <strong>Laboratory Test:</strong>
+
+                    {{ request_data.laboratory.test_name }}
+
+                </div>
+
+                <div class="col-md-6">
+
+                    <strong>Category:</strong>
+
+                    {{ request_data.laboratory.category }}
+
+                </div>
+
+            </div>
+
+            <div class="row mb-4">
+
+                <div class="col-md-6">
+
+                    <strong>Request Date:</strong>
+
+                    {{ request_data.request_date.strftime("%d-%m-%Y") }}
+
+                </div>
+
+                <div class="col-md-6">
+
+                    <strong>Status:</strong>
+
+                    {% if request_data.status == "Completed" %}
+
+                        <span class="badge bg-success">
+
+                            Completed
+
+                        </span>
+
+                    {% else %}
+
+                        <span class="badge bg-warning text-dark">
+
+                            Pending
+
+                        </span>
+
+                    {% endif %}
+
+                </div>
+
+            </div>
+
+            <hr>
+
+            <h4 class="mb-3">
+
+                Laboratory Result
+
+            </h4>
+
+            <div class="border rounded p-4 bg-light">
+
+                <pre style="white-space: pre-wrap; font-family: inherit;">{{ request_data.result or "Result not available." }}</pre>
+
+            </div>
+
+            <div class="text-end mt-5 text-muted">
+
+                Generated on
+
+                {{ request_data.request_date.strftime("%d-%m-%Y") }}
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+<style>
+
+@media print{
+
+    .navbar,
+    .sidebar,
+    .no-print,
+    .btn{
+
+        display:none !important;
+
+    }
+
+    .card{
+
+        border:none !important;
+
+        box-shadow:none !important;
+
+    }
+
+    body{
+
+        margin:0;
+
+        padding:0;
+
+    }
+
+}
+
+</style>
+
+{% endblock %}

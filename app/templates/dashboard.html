@@ -1,0 +1,1017 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="container-fluid py-4">
+
+    <!-- Dashboard Header -->
+<div class="dashboard-header">
+
+    <div class="row align-items-center">
+
+        <div class="col-lg-8">
+
+            <h2 class="dashboard-title">
+
+                <i class="bi bi-hospital-fill text-primary me-2"></i>
+
+                Hospital Dashboard
+
+            </h2>
+
+            <p class="dashboard-subtitle">
+
+                <span id="greeting"></span>
+
+                <strong>{{ current_user.full_name }}</strong>
+
+                <span class="mx-2">•</span>
+
+                <span id="currentDate"></span>
+
+            </p>
+
+        </div>
+
+        <div class="col-lg-4 text-lg-end mt-3 mt-lg-0">
+
+            <div class="dashboard-clock">
+
+                <i class="bi bi-clock-history me-2"></i>
+
+                <span id="liveClock"></span>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+    <!-- Sticky Navigation -->
+    <!-- Dashboard Navigation -->
+
+<nav class="dashboard-nav">
+
+    <a href="#overview-section">
+        <i class="bi bi-grid-1x2-fill"></i>
+        <span>Overview</span>
+    </a>
+
+    <a href="#quick-actions-section">
+        <i class="bi bi-lightning-charge-fill"></i>
+        <span>Actions</span>
+    </a>
+
+    <a href="#today-summary-section">
+        <i class="bi bi-calendar-check-fill"></i>
+        <span>Today</span>
+    </a>
+
+    <a href="#analytics-section">
+        <i class="bi bi-bar-chart-fill"></i>
+        <span>Analytics</span>
+    </a>
+
+    <a href="#recent-activities-section">
+        <i class="bi bi-clock-history"></i>
+        <span>Activity</span>
+    </a>
+
+    <a href="#medicine-alerts-section">
+        <i class="bi bi-exclamation-triangle-fill"></i>
+        <span>Alerts</span>
+    </a>
+
+</nav>
+
+    <!-- ==============================
+     Overview Cards
+================================== -->
+
+<section id="overview-section">
+
+    <div class="row g-4">
+
+        <!-- Doctors -->
+        <div class="col-xl-3 col-lg-6">
+            
+
+             <a href="{{ url_for('doctor.doctors') }}"
+                class="dashboard-card text-decoration-none">
+
+                <div class="dashboard-icon bg-primary">
+
+                    <i class="bi bi-person-badge-fill"></i>
+
+                </div>
+
+                <div>
+
+                    <small>Total Doctors</small>
+
+                    <h3 class="counter">
+
+                        {{ doctor_count }}
+
+                    </h3>
+
+                </div>
+
+             </a>
+
+        </div>
+
+        <!-- Patients -->
+        <div class="col-xl-3 col-lg-6">
+
+            <a href="{{ url_for('patient.patients') }}"
+                class="dashboard-card text-decoration-none">
+
+                <div class="dashboard-icon bg-success">
+
+                    <i class="bi bi-people-fill"></i>
+
+                </div>
+
+                <div>
+
+                    <small>Total Patients</small>
+
+                    <h3 class="counter">
+
+                        {{ patient_count }}
+
+                    </h3>
+
+                </div>
+
+            </a>
+
+        </div>
+
+        <!-- Departments -->
+        <div class="col-xl-3 col-lg-6">
+
+            <a href="{{ url_for('department.departments') }}"
+                class="dashboard-card text-decoration-none">
+
+                <div class="dashboard-icon bg-warning">
+
+                    <i class="bi bi-building"></i>
+
+                </div>
+
+                <div>
+
+                    <small>Departments</small>
+
+                    <h3 class="counter">
+
+                        {{ department_count }}
+
+                    </h3>
+
+                </div>
+
+            </a>
+
+        </div>
+
+        <!-- Appointments -->
+        <div class="col-xl-3 col-lg-6">
+
+            <a href="{{ url_for('appointment.appointments') }}"
+                class="dashboard-card text-decoration-none">
+
+                <div class="dashboard-icon bg-danger">
+
+                    <i class="bi bi-calendar-check-fill"></i>
+
+                </div>
+
+                <div>
+
+                    <small>Appointments</small>
+
+                    <h3 class="counter">
+
+                        {{ appointment_count }}
+
+                    </h3>
+
+                </div>
+
+            </a>
+
+        </div>
+
+        <!-- Medicines -->
+        <div class="col-xl-3 col-lg-6">
+
+            <a href="{{ url_for('medicine.medicines') }}"
+                class="dashboard-card text-decoration-none">
+
+                <div class="dashboard-icon bg-info">
+
+                    <i class="bi bi-capsule-pill"></i>
+
+                </div>
+
+                <div>
+
+                    <small>Medicines</small>
+
+                    <h3 class="counter">
+
+                        {{ medicine_count }}
+
+                    </h3>
+
+                </div>
+
+            </a>
+
+        </div>
+
+        <!-- Bills -->
+        <div class="col-xl-3 col-lg-6">
+
+            <a href="{{ url_for('billing.bills') }}" class="dashboard-card text-decoration-none">
+
+                <div class="dashboard-icon bg-secondary">
+
+                    <i class="bi bi-receipt-cutoff"></i>
+
+                </div>
+
+                <div>
+
+                    <small>Total Bills</small>
+
+                    <h3 class="counter">
+
+                        {{ bill_count }}
+
+                    </h3>
+
+                </div>
+
+            </a>
+
+        </div>
+
+        <!-- Laboratory -->
+        <div class="col-xl-3 col-lg-6">
+
+            <a href="{{ url_for('laboratory.laboratory') }}"
+                class="dashboard-card text-decoration-none">
+
+                <div class="dashboard-icon bg-dark">
+
+                    <i class="bi bi-eyedropper"></i>
+
+                </div>
+
+                <div>
+
+                    <small>Lab Tests</small>
+
+                    <h3 class="counter">
+
+                        {{ laboratory_count }}
+
+                    </h3>
+
+                </div>
+
+            </a>
+
+        </div>
+
+        <!-- Revenue -->
+        <div class="col-xl-3 col-lg-6">
+
+            <a href="{{ url_for('billing.bills') }}"
+                class="dashboard-card text-decoration-none">
+
+                <div class="dashboard-icon bg-success">
+
+                    <i class="bi bi-currency-dollar"></i>
+
+                </div>
+
+                <div>
+
+                    <small>Total Revenue</small>
+
+                    <h3>
+
+                        SAR {{ "{:,.0f}".format(total_revenue) }}
+
+                    </h3>
+
+                </div>
+
+            </a>
+
+        </div>
+
+    </div>
+
+</section>
+
+    <!-- Quick Actions -->
+    <section id="quick-actions-section" class="mt-5">
+
+    <div class="section-title mb-4">
+
+        <h4>
+
+            <i class="bi bi-lightning-charge-fill text-warning"></i>
+
+            Quick Actions
+
+        </h4>
+
+    </div>
+
+    <div class="row g-4">
+
+        <div class="col-lg-2 col-md-4 col-6">
+
+            <a href="{{ url_for('patient.add_patient') }}" class="quick-action">
+
+                <i class="bi bi-person-plus-fill"></i>
+
+                <span>Add Patient</span>
+
+            </a>
+
+        </div>
+
+        <div class="col-lg-2 col-md-4 col-6">
+
+            <a href="{{ url_for('doctor.add_doctor') }}" class="quick-action">
+
+                <i class="bi bi-person-badge-fill"></i>
+
+                <span>Add Doctor</span>
+
+            </a>
+
+        </div>
+
+        <div class="col-lg-2 col-md-4 col-6">
+
+            <a href="{{ url_for('appointment.add_appointment') }}" class="quick-action">
+
+                <i class="bi bi-calendar-plus-fill"></i>
+
+                <span>Appointment</span>
+
+            </a>
+
+        </div>
+
+        <div class="col-lg-2 col-md-4 col-6">
+
+            <a href="{{ url_for('billing.add_bill') }}" class="quick-action">
+
+                <i class="bi bi-receipt-cutoff"></i>
+
+                <span>Create Bill</span>
+
+            </a>
+
+        </div>
+
+        <div class="col-lg-2 col-md-4 col-6">
+
+            <a href="{{ url_for('medicine.add_medicine') }}" class="quick-action">
+
+                <i class="bi bi-capsule-pill"></i>
+
+                <span>Add Medicine</span>
+
+            </a>
+
+        </div>
+
+        <div class="col-lg-2 col-md-4 col-6">
+
+            <a href="{{ url_for('prescription.add_prescription') }}" class="quick-action">
+
+                <i class="bi bi-file-medical-fill"></i>
+
+                <span>Prescription</span>
+
+            </a>
+
+        </div>
+
+    </div>
+
+</section>
+
+    <!-- Today's Summary -->
+    <section id="today-summary-section" class="mt-5">
+
+    <div class="section-title mb-4">
+
+        <h4>
+
+            <i class="bi bi-calendar-check-fill text-success"></i>
+
+            Today's Summary
+
+        </h4>
+
+    </div>
+
+    <div class="row g-4">
+
+        <div class="col-lg-3 col-md-6">
+
+            <div class="summary-card">
+
+                <i class="bi bi-calendar2-check-fill text-primary"></i>
+
+                <h3>{{ today_appointment_count }}</h3>
+
+                <p>Today's Appointments</p>
+
+            </div>
+
+        </div>
+
+        <div class="col-lg-3 col-md-6">
+
+            <div class="summary-card">
+
+                <i class="bi bi-receipt-cutoff text-success"></i>
+
+                <h3>{{ today_bill_count }}</h3>
+
+                <p>Today's Bills</p>
+
+            </div>
+
+        </div>
+
+        <div class="col-lg-3 col-md-6">
+
+            <div class="summary-card">
+
+                <i class="bi bi-currency-dollar text-warning"></i>
+
+                <h3>SAR {{ "{:,.0f}".format(today_revenue) }}</h3>
+
+                <p>Today's Revenue</p>
+
+            </div>
+
+        </div>
+
+        <div class="col-lg-3 col-md-6">
+
+            <div class="summary-card">
+
+                <i class="bi bi-person-check-fill text-danger"></i>
+
+                <h3>{{ available_doctors }}</h3>
+
+                <p>Available Doctors</p>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</section>
+
+    <!-- Analytics -->
+    <div id="analytics-section">
+
+    </div>
+
+    <!-- Recent Activities -->
+    <<section id="recent-activity-section" class="mt-5">
+
+    <div class="section-title mb-4">
+
+        <h4>
+
+            <i class="bi bi-clock-history text-primary"></i>
+
+            Recent Activity
+
+        </h4>
+
+    </div>
+
+    <div class="row g-4">
+
+        <!-- Recent Patients -->
+
+        <div class="col-lg-4">
+
+            <div class="activity-card">
+
+                <h5>
+
+                    <i class="bi bi-people-fill text-success"></i>
+
+                    Recent Patients
+
+                </h5>
+
+                <ul class="list-group list-group-flush">
+
+                    {% for patient in recent_patients %}
+
+                    <li class="list-group-item d-flex justify-content-between">
+
+                        <span>{{ patient.full_name }}</span>
+
+                        <small class="text-muted">#{{ patient.id }}</small>
+
+                    </li>
+
+                    {% else %}
+
+                    <li class="list-group-item text-muted">
+
+                        No patient found.
+
+                    </li>
+
+                    {% endfor %}
+
+                </ul>
+
+            </div>
+
+        </div>
+
+        <!-- Recent Bills -->
+
+        <div class="col-lg-4">
+
+            <div class="activity-card">
+
+                <h5>
+
+                    <i class="bi bi-receipt-cutoff text-warning"></i>
+
+                    Recent Bills
+
+                </h5>
+
+                <ul class="list-group list-group-flush">
+
+                    {% for bill in recent_bills %}
+
+                    <li class="list-group-item d-flex justify-content-between">
+
+                        <span>{{ bill.patient.full_name }}</span>
+
+                        <strong>SAR {{ bill.total_amount }}</strong>
+
+                    </li>
+
+                    {% else %}
+
+                    <li class="list-group-item text-muted">
+
+                        No bill found.
+
+                    </li>
+
+                    {% endfor %}
+
+                </ul>
+
+            </div>
+
+        </div>
+
+        <!-- Today's Appointments -->
+
+        <div class="col-lg-4">
+
+            <div class="activity-card">
+
+                <h5>
+
+                    <i class="bi bi-calendar-event-fill text-danger"></i>
+
+                    Latest Appointments
+
+                </h5>
+
+                <ul class="list-group list-group-flush">
+
+                    {% for appointment in today_appointments %}
+
+                    <li class="list-group-item d-flex justify-content-between">
+
+                        <span>{{ appointment.patient.full_name }}</span>
+
+                        <span class="badge bg-primary">
+
+                            {{ appointment.status }}
+
+                        </span>
+
+                    </li>
+
+                    {% else %}
+
+                    <li class="list-group-item text-muted">
+
+                        No appointments found.
+
+                    </li>
+
+                    {% endfor %}
+
+                </ul>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</section>
+
+    <!-- Medicine Alerts -->
+    <section id="alerts-section" class="mt-5">
+
+    <div class="section-title mb-4">
+
+        <h4>
+
+            <i class="bi bi-bell-fill text-danger"></i>
+
+            Alerts & Notifications
+
+        </h4>
+
+    </div>
+
+    <div class="row g-4">
+
+        <!-- Low Stock -->
+
+        <div class="col-lg-4">
+
+            <div class="alert-card border-warning">
+
+                <h5>
+
+                    <i class="bi bi-capsule text-warning"></i>
+
+                    Low Stock Medicines
+
+                </h5>
+
+                <ul class="list-group list-group-flush">
+
+                    {% for medicine in low_stock_medicines %}
+
+                    <li class="list-group-item d-flex justify-content-between">
+
+                        <span>{{ medicine.name }}</span>
+
+                        <span class="badge bg-warning text-dark">
+
+                            {{ medicine.quantity }}
+
+                        </span>
+
+                    </li>
+
+                    {% else %}
+
+                    <li class="list-group-item text-muted">
+
+                        No low stock medicines.
+
+                    </li>
+
+                    {% endfor %}
+
+                </ul>
+
+            </div>
+
+        </div>
+
+        <!-- Expired Medicines -->
+
+        <div class="col-lg-4">
+
+            <div class="alert-card border-danger">
+
+                <h5>
+
+                    <i class="bi bi-exclamation-octagon-fill text-danger"></i>
+
+                    Expired Medicines
+
+                </h5>
+
+                <ul class="list-group list-group-flush">
+
+                    {% for medicine in expired_medicines %}
+
+                    <li class="list-group-item d-flex justify-content-between">
+
+                        <span>{{ medicine.name }}</span>
+
+                        <small class="text-danger">
+
+                            {{ medicine.expiry_date }}
+
+                        </small>
+
+                    </li>
+
+                    {% else %}
+
+                    <li class="list-group-item text-muted">
+
+                        No expired medicines.
+
+                    </li>
+
+                    {% endfor %}
+
+                </ul>
+
+            </div>
+
+        </div>
+
+        <!-- Pending Appointments -->
+
+        <div class="col-lg-4">
+
+            <div class="alert-card border-primary">
+
+                <h5>
+
+                    <i class="bi bi-calendar-check-fill text-primary"></i>
+
+                    Pending Appointments
+
+                </h5>
+
+                <div class="pending-counter">
+
+                    {{ pending_count }}
+
+                </div>
+
+                <p class="text-muted">
+
+                    appointments are waiting for confirmation.
+
+                </p>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</section>
+
+
+<!------Alerts & Notifications-------->
+
+<section class="mt-5" id="analytics-section">
+
+    <div class="section-title mb-4">
+
+        <h4>
+
+            <i class="bi bi-bar-chart-fill text-success"></i>
+
+            Revenue Analytics
+
+        </h4>
+
+    </div>
+
+    <div class="chart-card">
+
+        <canvas id="revenueChart"></canvas>
+
+    </div>
+
+</section>
+
+    <!-- Footer -->
+    <div id="dashboard-footer">
+
+    </div>
+
+</div>
+
+
+
+<script>
+
+function updateClock(){
+
+    const now = new Date();
+
+    document.getElementById("liveClock").innerHTML =
+    now.toLocaleTimeString();
+
+}
+
+setInterval(updateClock,1000);
+
+updateClock();
+
+
+
+const hour = new Date().getHours();
+
+let greeting = "";
+
+
+
+if(hour < 12){
+
+    greeting = "Good Morning,";
+
+}
+
+else if(hour < 17){
+
+    greeting = "Good Afternoon,";
+
+}
+
+else{
+
+    greeting = "Good Evening,";
+
+}
+
+
+
+document.getElementById("greeting").innerHTML = greeting;
+
+
+
+document.getElementById("currentDate").innerHTML =
+new Date().toLocaleDateString(
+'en-US',
+{
+weekday:'long',
+day:'numeric',
+month:'long',
+year:'numeric'
+}
+);
+
+</script>
+
+
+<script>
+
+const ctx = document.getElementById("revenueChart");
+
+const gradient = ctx.getContext("2d").createLinearGradient(0,0,0,450);
+
+gradient.addColorStop(0,"rgba(13,110,253,.35)");
+gradient.addColorStop(1,"rgba(13,110,253,0)");
+
+new Chart(ctx,{
+
+    type:"line",
+
+    data:{
+
+        labels:[
+
+            "Jan","Feb","Mar","Apr",
+
+            "May","Jun","Jul","Aug",
+
+            "Sep","Oct","Nov","Dec"
+
+        ],
+
+        datasets:[{
+
+            label:"Revenue",
+
+            data:{{ monthly_revenue|tojson }},
+
+            borderColor:"#0d6efd",
+
+            backgroundColor:gradient,
+
+            fill:true,
+
+            tension:.4,
+
+            pointRadius:5,
+
+            pointHoverRadius:8,
+
+            pointBackgroundColor:"#0d6efd",
+
+            borderWidth:3
+
+        }]
+
+    },
+
+    options:{
+
+        responsive:true,
+
+        maintainAspectRatio:false,
+
+        interaction:{
+
+            intersect:false,
+
+            mode:"index"
+
+        },
+
+        plugins:{
+
+            legend:{
+
+                display:false
+
+            },
+
+            tooltip:{
+
+                callbacks:{
+
+                    label:function(context){
+
+                        return "SAR " +
+
+                        context.raw.toLocaleString();
+
+                    }
+
+                }
+
+            }
+
+        },
+
+        scales:{
+
+            x:{
+
+                grid:{
+
+                    display:false
+
+                }
+
+            },
+
+            y:{
+
+                beginAtZero:true,
+
+                ticks:{
+
+                    callback:function(value){
+
+                        return "SAR " +
+
+                        value.toLocaleString();
+
+                    }
+
+                }
+
+            }
+
+        }
+
+    }
+
+});
+
+</script>
+{% endblock %}

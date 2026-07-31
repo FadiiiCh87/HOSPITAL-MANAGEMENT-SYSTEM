@@ -1,0 +1,154 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="container-fluid">
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+
+        <div>
+
+            <h2 class="fw-bold">
+
+                View Prescription
+
+            </h2>
+
+            <p class="text-muted">
+
+                Prescription details.
+
+            </p>
+
+        </div>
+
+        <div>
+            <a
+                href="{{ url_for('prescription.print_prescription', id=prescription.id) }}"
+                class="btn btn-success">
+
+                <i class="bi bi-printer"></i>
+
+                Print
+
+            </a>
+            <a
+                href="{{ url_for('prescription.prescriptions') }}"
+                class="btn btn-secondary">
+
+                <i class="bi bi-arrow-left"></i>
+
+                Back
+
+            </a>
+            
+
+        </div>
+
+    </div>
+
+    <div class="card shadow border-0">
+
+        <div class="card-body">
+
+            <div class="row mb-3">
+
+                <div class="col-md-6">
+
+                    <label class="fw-bold">
+
+                        Patient
+
+                    </label>
+
+                    <div>
+
+                        {{ prescription.patient.full_name }}
+
+                    </div>
+
+                </div>
+
+                <div class="col-md-6">
+
+                    <label class="fw-bold">
+
+                        Doctor
+
+                    </label>
+
+                    <div>
+
+                        {{ prescription.doctor.full_name }}
+
+                    </div>
+
+                </div>
+
+            </div>
+
+            <div class="row mb-4">
+
+                <div class="col-md-6">
+
+                    <label class="fw-bold">
+
+                        Prescription Date
+
+                    </label>
+
+                    <div>
+
+                        {{ prescription.prescription_date.strftime("%d-%m-%Y") }}
+
+                    </div>
+
+                </div>
+
+            </div>
+
+            <hr>
+
+            <h5>
+
+                Diagnosis
+
+            </h5>
+
+            <div class="border rounded p-3 bg-light mb-4">
+
+                <pre style="white-space: pre-wrap; font-family: inherit;">{{ prescription.diagnosis }}</pre>
+
+            </div>
+
+            <h5>
+
+                Medicines
+
+            </h5>
+
+            <div class="border rounded p-3 bg-light mb-4">
+
+                <pre style="white-space: pre-wrap; font-family: inherit;">{{ prescription.medicines }}</pre>
+
+            </div>
+
+            <h5>
+
+                Notes
+
+            </h5>
+
+            <div class="border rounded p-3 bg-light">
+
+                <pre style="white-space: pre-wrap; font-family: inherit;">{{ prescription.notes or "No notes available." }}</pre>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}

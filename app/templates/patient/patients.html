@@ -1,0 +1,219 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<h2>Patients</h2>
+
+<hr>
+
+<form method="GET">
+
+<div class="row mb-3">
+
+    <div class="col-md-8">
+
+        <input
+        type="text"
+        name="search"
+        class="form-control"
+        placeholder="Search by Name or Email..."
+        value="{{ search }}">
+
+    </div>
+
+    <div class="col-md-2">
+
+        <button
+        class="btn btn-primary w-100">
+
+            Search
+
+        </button>
+
+    </div>
+
+    <div class="col-md-2">
+
+        <a
+        href="{{ url_for('patient.patients') }}"
+        class="btn btn-secondary w-100">
+
+            Reset
+
+        </a>
+
+    </div>
+
+</div>
+
+</form>
+
+<hr>
+
+<a href="{{ url_for('patient.add_patient') }}"
+class="btn btn-success mb-3">
+
+    <i class="bi bi-plus-circle"></i>
+
+    Add Patient
+
+</a>
+
+<table class="table table-bordered table-hover align-middle">
+
+    <thead class="table-dark">
+
+        <tr>
+
+            <th>ID</th>
+            <th>Name</th>
+            <th>Age</th>
+            <th>Gender</th>
+            <th>Phone</th>
+            <th>Email</th>
+            <th>Blood Group</th>
+            <th>Action</th>
+
+        </tr>
+
+    </thead>
+
+    <tbody>
+
+    {% if patients.items|length > 0 %}
+
+        {% for patient in patients.items %}
+
+        <tr>
+
+            <td>{{ patient.id }}</td>
+            <td>{{ patient.full_name }}</td>
+            <td>{{ patient.age }}</td>
+            <td>{{ patient.gender }}</td>
+            <td>{{ patient.phone }}</td>
+            <td>{{ patient.email }}</td>
+            <td>{{ patient.blood_group or "Not Added" }}</td>
+
+            <td>
+
+                <a
+                href="{{ url_for('patient.edit_patient', id=patient.id) }}"
+                class="btn btn-warning btn-sm">
+
+                    Edit
+
+                </a>
+
+                <form
+                action="{{ url_for('patient.delete_patient', id=patient.id) }}"
+                method="POST"
+                style="display:inline;">
+
+                    <button
+                    type="submit"
+                    class="btn btn-danger btn-sm"
+                    onclick="return confirm('Are you sure you want to delete this patient?')">
+
+                        Delete
+
+                    </button>
+
+                </form>
+
+            </td>
+
+        </tr>
+
+        {% endfor %}
+
+    {% else %}
+
+        <tr>
+
+            <td colspan="8" class="text-center text-danger fw-bold">
+
+                No Patients Found
+
+            </td>
+
+        </tr>
+
+    {% endif %}
+
+    </tbody>
+
+</table>
+
+<!-- Pagination -->
+
+{% if patients.pages > 1 %}
+
+<nav class="mt-3">
+
+<ul class="pagination justify-content-center">
+
+    <!-- Previous -->
+
+    {% if patients.has_prev %}
+
+    <li class="page-item">
+
+        <a
+        class="page-link"
+        href="{{ url_for('patient.patients', page=patients.prev_num, search=search) }}">
+
+            Previous
+
+        </a>
+
+    </li>
+
+    {% endif %}
+
+    <!-- Page Numbers -->
+
+    {% for page_num in patients.iter_pages() %}
+
+        {% if page_num %}
+
+            <li class="page-item {% if page_num == patients.page %}active{% endif %}">
+
+                <a
+                class="page-link"
+                href="{{ url_for('patient.patients', page=page_num, search=search) }}">
+
+                    {{ page_num }}
+
+                </a>
+
+            </li>
+
+        {% endif %}
+
+    {% endfor %}
+
+    <!-- Next -->
+
+    {% if patients.has_next %}
+
+    <li class="page-item">
+
+        <a
+        class="page-link"
+        href="{{ url_for('patient.patients', page=patients.next_num, search=search) }}">
+
+            Next
+
+        </a>
+
+    </li>
+
+    {% endif %}
+
+</ul>
+
+</nav>
+
+{% endif %}
+
+{% endblock %}

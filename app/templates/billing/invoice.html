@@ -1,0 +1,475 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="container-fluid py-4">
+
+<div class="card shadow-lg border-0">
+
+<div class="card-body">
+
+<!-- =================================== -->
+<!-- Invoice Header -->
+<!-- =================================== -->
+
+<div class="row align-items-center">
+
+<div class="col-md-8">
+
+<div class="d-flex align-items-center">
+
+<div class="bg-primary rounded-circle d-flex justify-content-center align-items-center me-4"
+style="width:90px;height:90px;">
+
+<i class="bi bi-hospital text-white fs-1"></i>
+
+</div>
+
+<div>
+
+<h2 class="fw-bold text-primary mb-1">
+
+Main City Hospital
+
+</h2>
+
+<p class="mb-1">
+
+Riyadh, Saudi Arabia
+
+</p>
+
+<p class="mb-0">
+
+Phone:
++966 500 000 000
+
+<br>
+
+Email:
+info@maincityhospital.com
+
+</p>
+
+</div>
+
+</div>
+
+</div>
+
+<div class="col-md-4 text-end">
+
+<h1 class="fw-bold text-success">
+
+INVOICE
+
+</h1>
+
+<hr>
+
+<h5>
+
+Invoice No
+
+</h5>
+
+<h3 class="text-primary">
+
+{{ bill.invoice_no }}
+
+</h3>
+
+<p>
+
+<strong>Date :</strong>
+
+{{ bill.created_at.strftime("%d %b %Y") }}
+
+</p>
+
+<p>
+
+<strong>Status :</strong>
+
+{% if bill.payment_status=="Paid" %}
+
+<span class="badge bg-success fs-6">
+
+PAID
+
+</span>
+
+{% else %}
+
+<span class="badge bg-warning text-dark fs-6">
+
+UNPAID
+
+</span>
+
+{% endif %}
+
+</p>
+
+</div>
+
+</div>
+
+<hr class="my-4">
+<!-- =================================== -->
+<!-- Patient Information -->
+<!-- =================================== -->
+
+<div class="card border-0 shadow-sm mb-4">
+
+    <div class="card-header bg-primary text-white">
+
+        <h4 class="mb-0">
+
+            <i class="bi bi-person-circle"></i>
+
+            Patient Information
+
+        </h4>
+
+    </div>
+
+    <div class="card-body">
+
+        <div class="row">
+
+            <!-- Patient Photo -->
+
+            <div class="col-md-3 text-center">
+
+                {% if bill.patient.photo %}
+
+                <img
+                    src="{{ url_for('static', filename='uploads/patients/' ~ bill.patient.photo) }}"
+                    class="img-fluid rounded-circle border shadow"
+                    style="width:170px;height:170px;object-fit:cover;">
+
+                {% else %}
+
+                <div
+                    class="rounded-circle bg-light border shadow d-flex justify-content-center align-items-center mx-auto"
+                    style="width:170px;height:170px;">
+
+                    <i class="bi bi-person-fill text-secondary"
+                       style="font-size:70px;"></i>
+
+                </div>
+
+                {% endif %}
+
+            </div>
+
+            <!-- Patient Details -->
+
+            <div class="col-md-9">
+
+                <div class="row">
+
+                    <div class="col-md-6 mb-3">
+
+                        <strong>Patient Name</strong>
+
+                        <p>{{ bill.patient.full_name }}</p>
+
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+
+                        <strong>Age</strong>
+
+                        <p>{{ bill.patient.age }} Years</p>
+
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+
+                        <strong>Gender</strong>
+
+                        <p>{{ bill.patient.gender }}</p>
+
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+
+                        <strong>Blood Group</strong>
+
+                        <p>{{ bill.patient.blood_group }}</p>
+
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+
+                        <strong>Phone</strong>
+
+                        <p>{{ bill.patient.phone }}</p>
+
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+
+                        <strong>Email</strong>
+
+                        <p>{{ bill.patient.email }}</p>
+
+                    </div>
+
+                    <div class="col-12">
+
+                        <strong>Address</strong>
+
+                        <p>{{ bill.patient.address }}</p>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+<!-- =================================== -->
+<!-- Billing Details -->
+<!-- =================================== -->
+
+<div class="card border-0 shadow-sm mb-4">
+
+    <div class="card-header bg-success text-white">
+
+        <h4 class="mb-0">
+
+            <i class="bi bi-receipt"></i>
+
+            Billing Details
+
+        </h4>
+
+    </div>
+
+    <div class="card-body">
+
+        <table class="table table-bordered align-middle">
+
+            <thead class="table-dark">
+
+                <tr>
+
+                    <th>Description</th>
+
+                    <th width="220" class="text-end">
+
+                        Amount
+
+                    </th>
+
+                </tr>
+
+            </thead>
+
+            <tbody>
+
+                <tr>
+
+                    <td>Consultation Fee</td>
+
+                    <td class="text-end">
+
+                        SAR {{ "%.2f"|format(bill.consultation_fee) }}
+
+                    </td>
+
+                </tr>
+
+                <tr>
+
+                    <td>Medicine Charges</td>
+
+                    <td class="text-end">
+
+                        SAR {{ "%.2f"|format(bill.medicine_charge) }}
+
+                    </td>
+
+                </tr>
+
+                <tr>
+
+                    <td>Other Charges</td>
+
+                    <td class="text-end">
+
+                        SAR {{ "%.2f"|format(bill.other_charge) }}
+
+                    </td>
+
+                </tr>
+
+            </tbody>
+
+            <tfoot>
+
+                <tr class="table-success">
+
+                    <th class="fs-5">
+
+                        Grand Total
+
+                    </th>
+
+                    <th class="text-end fs-4 text-success">
+
+                        SAR {{ "%.2f"|format(bill.total_amount) }}
+
+                    </th>
+
+                </tr>
+
+            </tfoot>
+
+        </table>
+
+    </div>
+
+</div>
+
+<!-- =================================== -->
+<!-- Signatures -->
+<!-- =================================== -->
+
+<div class="row mt-5">
+
+    <div class="col-6 text-center">
+
+        <br><br>
+
+        <hr>
+
+        <strong>
+
+            Authorized Signature
+
+        </strong>
+
+    </div>
+
+    <div class="col-6 text-center">
+
+        <br><br>
+
+        <hr>
+
+        <strong>
+
+            Patient Signature
+
+        </strong>
+
+    </div>
+
+</div>
+
+<!-- =================================== -->
+<!-- Footer -->
+<!-- =================================== -->
+
+<div class="text-center mt-5">
+
+    <h5 class="text-success">
+
+        Thank You For Choosing
+
+        Main City Hospital
+
+    </h5>
+
+    <p class="text-muted">
+
+        We wish you good health.
+
+    </p>
+
+</div>
+
+<!-- =================================== -->
+<!-- Buttons -->
+<!-- =================================== -->
+
+<div class="mt-4 text-center no-print">
+
+    <button
+        onclick="window.print()"
+        class="btn btn-primary">
+
+        <i class="bi bi-printer-fill"></i>
+
+        Print Invoice
+
+    </button>
+
+    <a
+        href="{{ url_for('billing.bills') }}"
+        class="btn btn-secondary">
+
+        Back
+
+    </a>
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+<style>
+
+@media print{
+
+    nav,
+    .sidebar,
+    .navbar,
+    .no-print,
+    footer{
+
+        display:none !important;
+
+    }
+
+    body{
+
+        background:white;
+
+    }
+
+    .card{
+
+        border:none !important;
+
+        box-shadow:none !important;
+
+    }
+
+    .container-fluid{
+
+        width:100%;
+
+        margin:0;
+
+        padding:0;
+
+    }
+
+}
+
+</style>
+
+{% endblock %}

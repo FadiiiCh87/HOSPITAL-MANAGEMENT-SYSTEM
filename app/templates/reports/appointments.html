@@ -1,0 +1,492 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="container-fluid">
+
+    <!-- Page Header -->
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+
+        <div>
+
+            <h2 class="fw-bold mb-1">
+
+                Appointment Report
+
+            </h2>
+
+            <p class="text-muted mb-0">
+
+                View and manage all appointment records.
+
+            </p>
+
+        </div>
+
+        <div>
+
+            <a href="{{ url_for('report.appointment_report') }}"
+               class="btn btn-outline-secondary">
+
+                <i class="bi bi-arrow-clockwise"></i>
+
+                Reset
+
+            </a>
+                <a href="{{ url_for('report.export_appointments_excel') }}"
+                class="btn btn-success">
+
+                    <i class="bi bi-file-earmark-excel-fill"></i>
+
+                    Export Excel
+
+                </a>
+            <button
+                onclick="window.print()"
+                class="btn btn-primary">
+
+                <i class="bi bi-printer-fill"></i>
+
+                Print
+
+            </button>
+
+            <a href="{{ url_for('report.export_appointments_pdf') }}"
+   class="btn btn-danger">
+
+    <i class="bi bi-file-earmark-pdf-fill"></i>
+
+    Export PDF
+
+ </a>
+
+        </div>
+
+    </div>
+
+    <!-- Statistics Cards -->
+
+    <div class="row g-4">
+
+        <div class="col-lg-3 col-md-6">
+
+            <div class="card border-0 shadow h-100">
+
+                <div class="card-body text-center">
+
+                    <i class="bi bi-calendar-check text-primary fs-1"></i>
+
+                    <h6 class="mt-3 text-muted">
+
+                        Total Appointments
+
+                    </h6>
+
+                    <h2 class="fw-bold">
+
+                        {{ total_appointments }}
+
+                    </h2>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <div class="col-lg-3 col-md-6">
+
+            <div class="card border-0 shadow h-100">
+
+                <div class="card-body text-center">
+
+                    <i class="bi bi-hourglass-split text-warning fs-1"></i>
+
+                    <h6 class="mt-3 text-muted">
+
+                        Pending
+
+                    </h6>
+
+                    <h2 class="fw-bold text-warning">
+
+                        {{ pending_count }}
+
+                    </h2>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <div class="col-lg-3 col-md-6">
+
+            <div class="card border-0 shadow h-100">
+
+                <div class="card-body text-center">
+
+                    <i class="bi bi-check-circle-fill text-success fs-1"></i>
+
+                    <h6 class="mt-3 text-muted">
+
+                        Completed
+
+                    </h6>
+
+                    <h2 class="fw-bold text-success">
+
+                        {{ completed_count }}
+
+                    </h2>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <div class="col-lg-3 col-md-6">
+
+            <div class="card border-0 shadow h-100">
+
+                <div class="card-body text-center">
+
+                    <i class="bi bi-x-circle-fill text-danger fs-1"></i>
+
+                    <h6 class="mt-3 text-muted">
+
+                        Cancelled
+
+                    </h6>
+
+                    <h2 class="fw-bold text-danger">
+
+                        {{ cancelled_count }}
+
+                    </h2>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- Filter -->
+
+    <div class="card shadow border-0 mt-4">
+
+        <div class="card-body">
+
+            <form method="GET">
+
+                <div class="row g-3">
+
+                    <div class="col-md-4">
+
+                        <label class="form-label">
+
+                            From Date
+
+                        </label>
+
+                        <input
+                            type="date"
+                            name="from_date"
+                            value="{{ from_date }}"
+                            class="form-control">
+
+                    </div>
+
+                    <div class="col-md-4">
+
+                        <label class="form-label">
+
+                            To Date
+
+                        </label>
+
+                        <input
+                            type="date"
+                            name="to_date"
+                            value="{{ to_date }}"
+                            class="form-control">
+
+                    </div>
+
+                    <div class="col-md-4 d-flex align-items-end">
+
+                        <button
+                            type="submit"
+                            class="btn btn-primary w-100">
+
+                            <i class="bi bi-funnel-fill"></i>
+
+                            Filter Report
+
+                        </button>
+
+                    </div>
+
+                </div>
+
+            </form>
+
+        </div>
+
+    </div>
+
+    <!-- Appointment Table -->
+
+    <div class="card shadow border-0 mt-4">
+
+        <div class="card-header bg-dark text-white">
+
+            <h5 class="mb-0">
+
+                Appointment Details
+
+            </h5>
+
+        </div>
+
+        <div class="card-body">
+
+            <div class="table-responsive">
+
+                <table class="table table-hover align-middle">
+
+                    <thead class="table-light">
+
+                        <tr>
+
+                            <th>ID</th>
+
+                            <th>Patient</th>
+
+                            <th>Doctor</th>
+
+                            <th>Date</th>
+
+                            <th>Time</th>
+
+                            <th>Status</th>
+
+                        </tr>
+
+                    </thead>
+
+                    <tbody>
+
+                    {% if appointments %}
+
+                        {% for appointment in appointments %}
+
+                        <tr>
+
+                            <td>
+
+                                #{{ appointment.id }}
+
+                            </td>
+
+                            <td>
+
+                                {{ appointment.patient.full_name }}
+
+                            </td>
+
+                            <td>
+
+                                {{ appointment.doctor.name }}
+
+                            </td>
+
+                            <td>
+
+                                {{ appointment.appointment_date.strftime("%d-%m-%Y") }}
+
+                            </td>
+
+                            <td>
+
+                                {{ appointment.appointment_time.strftime("%I:%M %p") }}
+
+                            </td>
+
+                            <td>
+
+                                {% if appointment.status == "Completed" %}
+
+                                    <span class="badge bg-success">
+
+                                        Completed
+
+                                    </span>
+
+                                {% elif appointment.status == "Pending" %}
+
+                                    <span class="badge bg-warning text-dark">
+
+                                        Pending
+
+                                    </span>
+
+                                {% else %}
+
+                                    <span class="badge bg-danger">
+
+                                        Cancelled
+
+                                    </span>
+
+                                {% endif %}
+
+                            </td>
+
+                        </tr>
+
+                        {% endfor %}
+
+                    {% else %}
+
+                        <tr>
+
+                            <td colspan="6" class="text-center py-5">
+
+                                <i class="bi bi-calendar-x fs-1 text-secondary"></i>
+
+                                <br><br>
+
+                                <h5>
+
+                                    No appointments found.
+
+                                </h5>
+
+                            </td>
+
+                        </tr>
+
+                    {% endif %}
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+<div class="card shadow border-0 mt-4">
+
+    <div class="card-header bg-info text-white">
+
+        <h5 class="mb-0">
+
+            Report Summary
+
+        </h5>
+
+    </div>
+
+    <div class="card-body">
+
+        <div class="row text-center">
+
+            <div class="col-md-3">
+
+                <h4 class="text-primary">
+
+                    {{ total_appointments }}
+
+                </h4>
+
+                <p>Total Appointments</p>
+
+            </div>
+
+            <div class="col-md-3">
+
+                <h4 class="text-warning">
+
+                    {{ pending_count }}
+
+                </h4>
+
+                <p>Pending</p>
+
+            </div>
+
+            <div class="col-md-3">
+
+                <h4 class="text-success">
+
+                    {{ completed_count }}
+
+                </h4>
+
+                <p>Completed</p>
+
+            </div>
+
+            <div class="col-md-3">
+
+                <h4 class="text-danger">
+
+                    {{ cancelled_count }}
+
+                </h4>
+
+                <p>Cancelled</p>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+<div class="text-end mt-3 text-muted">
+
+    <small>
+
+        Report Generated:
+        {{ moment().format("DD MMM YYYY, hh:mm A") if moment else "Now" }}
+
+    </small>
+
+</div>
+
+<style>
+
+@media print{
+
+    .btn,
+    form,
+    .navbar,
+    .sidebar{
+
+        display:none !important;
+
+    }
+
+    .card{
+
+        border:none !important;
+
+        box-shadow:none !important;
+
+    }
+
+}
+
+</style>
+{% endblock %}

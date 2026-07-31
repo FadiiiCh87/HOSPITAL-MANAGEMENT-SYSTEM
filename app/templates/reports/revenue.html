@@ -1,0 +1,330 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<h2 class="mb-4">
+
+    Revenue Report
+
+</h2>
+
+<hr>
+
+<div class="row g-4">
+
+    <!-- Total Revenue -->
+    <div class="col-lg-3 col-md-6">
+
+        <div class="card bg-success text-white shadow">
+
+            <div class="card-body text-center">
+
+                <i class="bi bi-cash-stack fs-1"></i>
+
+                <h5 class="mt-2">Total Revenue</h5>
+
+                <h3>SAR {{ "%.2f"|format(total_revenue) }}</h3>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- Paid Revenue -->
+    <div class="col-lg-3 col-md-6">
+
+        <div class="card bg-primary text-white shadow">
+
+            <div class="card-body text-center">
+
+                <i class="bi bi-check-circle fs-1"></i>
+
+                <h5 class="mt-2">Paid Revenue</h5>
+
+                <h3>SAR {{ "%.2f"|format(paid_revenue) }}</h3>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- Unpaid Revenue -->
+    <div class="col-lg-3 col-md-6">
+
+        <div class="card bg-warning shadow">
+
+            <div class="card-body text-center">
+
+                <i class="bi bi-clock-history fs-1"></i>
+
+                <h5 class="mt-2">Pending Revenue</h5>
+
+                <h3>SAR {{ "%.2f"|format(unpaid_revenue) }}</h3>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- Total Bills -->
+    <div class="col-lg-3 col-md-6">
+
+        <div class="card bg-dark text-white shadow">
+
+            <div class="card-body text-center">
+
+                <i class="bi bi-receipt fs-1"></i>
+
+                <h5 class="mt-2">Total Bills</h5>
+
+                <h3>{{ total_bills }}</h3>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <div class="card shadow mt-4">
+
+    <div class="card-body">
+
+        <form method="GET">
+
+            <div class="row">
+
+                <div class="col-md-4">
+
+                    <label>From Date</label>
+
+                    <input
+                        type="date"
+                        name="from_date"
+                        value="{{ from_date }}"
+                        class="form-control">
+
+                </div>
+
+                <div class="col-md-4">
+
+                    <label>To Date</label>
+
+                    <input
+                        type="date"
+                        name="to_date"
+                        value="{{ to_date }}"
+                        class="form-control">
+
+                </div>
+
+                <div class="col-md-4 d-flex align-items-end">
+
+                    <button
+                        class="btn btn-primary w-100">
+
+                        Filter Report
+
+                    </button>
+
+                </div>
+
+            </div>
+
+        </form>
+
+        <div class="card shadow mt-4">
+
+    <div class="card-header bg-dark text-white">
+
+        <h5 class="mb-0">
+
+            Revenue Details
+
+        </h5>
+
+    </div>
+
+        <div class="d-flex justify-content-between align-items-center mt-4 mb-3">
+
+    <h4 class="mb-0">
+
+        Revenue Details
+
+    </h4>
+
+    <div>
+
+        <a href="{{ url_for('report.revenue_report') }}"
+           class="btn btn-secondary">
+
+            <i class="bi bi-arrow-clockwise"></i>
+
+            Reset
+
+        </a>
+
+        <button
+            onclick="window.print()"
+            class="btn btn-primary">
+
+            <i class="bi bi-printer-fill"></i>
+
+            Print Report
+
+        </button>
+
+    </div>
+
+</div>
+
+    <div class="card-body">
+
+        <div class="table-responsive">
+
+            <table class="table table-hover">
+
+                <thead>
+
+                    <tr>
+
+                        <th>Bill ID</th>
+                        <th>Patient</th>
+                        <th>Amount</th>
+                        <th>Status</th>
+                        <th>Date</th>
+
+                    </tr>
+
+                </thead>
+
+                <tbody>
+
+                    {% if bills %}
+
+                    {% for bill in bills %}
+
+                    <tr>
+
+                        <td>#{{ bill.id }}</td>
+
+                        <td>{{ bill.patient.full_name }}</td>
+
+                        <td>
+
+                            SAR {{ "%.2f"|format(bill.total_amount) }}
+
+                        </td>
+
+                        <td>
+
+                            {% if bill.payment_status == "Paid" %}
+
+                                <span class="badge bg-success">
+
+                                    Paid
+
+                                </span>
+
+                            {% else %}
+
+                                <span class="badge bg-warning text-dark">
+
+                                    Unpaid
+
+                                </span>
+
+                            {% endif %}
+
+                        </td>
+
+                        <td>
+
+                            {{ bill.created_at.strftime("%d-%m-%Y") }}
+
+                        </td>
+
+                    </tr>
+
+                {% endfor %}
+
+                {% else %}
+
+                <tr>
+
+                <td colspan="5" class="text-center text-muted py-4">
+
+                    <i class="bi bi-inbox fs-3"></i>
+
+                    <br><br>
+
+                    No revenue records found.
+
+                </td>
+
+                </tr>
+
+                {% endif %}
+
+                </tbody>
+
+            </table>
+            <div class="card mt-4 border-success">
+
+    <div class="card-body">
+
+        <div class="row text-center">
+
+            <div class="col-md-4">
+
+                <h6>Total Bills</h6>
+
+                <h4>{{ total_bills }}</h4>
+
+            </div>
+
+            <div class="col-md-4">
+
+                <h6>Total Revenue</h6>
+
+                <h4 class="text-success">
+
+                    SAR {{ "%.2f"|format(total_revenue) }}
+
+                </h4>
+
+            </div>
+
+            <div class="col-md-4">
+
+                <h6>Paid Revenue</h6>
+
+                <h4 class="text-primary">
+
+                    SAR {{ "%.2f"|format(paid_revenue) }}
+
+                </h4>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+        </div>
+
+    </div>
+
+</div>
+
+    </div>
+
+</div>
+
+</div>
+
+{% endblock %}

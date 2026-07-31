@@ -1,0 +1,193 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<h2>Edit Doctor</h2>
+
+<hr>
+
+<form method="POST" enctype="multipart/form-data">
+
+    <div class="row">
+
+        <div class="col-md-6">
+
+            <label>Full Name</label>
+
+            <input
+                type="text"
+                name="full_name"
+                class="form-control"
+                value="{{ doctor.full_name }}"
+                required>
+
+        </div>
+
+        <div class="col-md-6">
+
+            <label>Department</label>
+
+            <select
+                name="department_id"
+                class="form-select">
+
+                {% for department in departments %}
+
+                <option
+                    value="{{ department.id }}"
+                    {% if doctor.department_id == department.id %}selected{% endif %}>
+
+                    {{ department.name }}
+
+                </option>
+
+                {% endfor %}
+
+            </select>
+
+        </div>
+
+    </div>
+
+    <br>
+
+    <div class="row">
+
+        <div class="col-md-6">
+
+            <label>Phone</label>
+
+            <input
+                type="text"
+                name="phone"
+                class="form-control"
+                value="{{ doctor.phone }}">
+
+        </div>
+
+        <div class="col-md-6">
+
+            <label>Email</label>
+
+            <input
+                type="email"
+                name="email"
+                class="form-control"
+                value="{{ doctor.email }}">
+
+        </div>
+
+    </div>
+
+    <br>
+
+    <div class="row">
+
+        <div class="col-md-6">
+
+            <label>Gender</label>
+
+            <select
+                name="gender"
+                class="form-select">
+
+                <option value="Male"
+                    {% if doctor.gender=="Male" %}selected{% endif %}>
+                    Male
+                </option>
+
+                <option value="Female"
+                    {% if doctor.gender=="Female" %}selected{% endif %}>
+                    Female
+                </option>
+
+            </select>
+
+        </div>
+
+        <div class="col-md-6">
+
+            <label>Experience</label>
+
+            <input
+                type="number"
+                name="experience"
+                class="form-control"
+                value="{{ doctor.experience }}">
+
+        </div>
+
+    </div>
+
+    <br>
+
+    <hr>
+
+    <div class="row">
+
+        <div class="col-md-6">
+
+            <label class="form-label">
+                Current Photo
+            </label>
+
+            <br>
+
+            {% if doctor.photo %}
+
+            <img
+                src="{{ url_for('static', filename='uploads/doctors/' + doctor.photo) }}"
+                width="120"
+                height="120"
+                class="rounded-circle border shadow"
+                style="object-fit: cover;">
+
+            {% else %}
+
+            <img
+                src="{{ url_for('static', filename='images/default-doctor.png') }}"
+                width="120"
+                height="120"
+                class="rounded-circle border shadow"
+                style="object-fit: cover;">
+
+            {% endif %}
+
+        </div>
+
+        <div class="col-md-6">
+
+            <label class="form-label">
+                Change Photo
+            </label>
+
+            <input
+                type="file"
+                name="photo"
+                class="form-control">
+
+        </div>
+
+    </div>
+
+    <br>
+
+    <button
+        type="submit"
+        class="btn btn-primary">
+
+        Update Doctor
+
+    </button>
+
+    <a
+        href="{{ url_for('doctor.doctors') }}"
+        class="btn btn-secondary">
+
+        Cancel
+
+    </a>
+
+</form>
+
+{% endblock %}

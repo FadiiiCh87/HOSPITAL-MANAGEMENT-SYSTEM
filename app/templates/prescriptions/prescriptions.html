@@ -1,0 +1,206 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="container-fluid">
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+
+        <div>
+
+            <h2 class="fw-bold">
+                Prescription Management
+            </h2>
+
+            <p class="text-muted">
+                Manage all prescriptions.
+            </p>
+
+        </div>
+
+        <a href="{{ url_for('prescription.add_prescription') }}"
+           class="btn btn-success">
+
+            <i class="bi bi-plus-circle"></i>
+
+            Add Prescription
+
+        </a>
+
+    </div>
+
+    <div class="card shadow border-0 mb-4">
+
+        <div class="card-body">
+
+            <form method="GET">
+
+                <div class="row">
+
+                    <div class="col-md-10">
+
+                        <input
+                            type="text"
+                            name="search"
+                            value="{{ search }}"
+                            class="form-control"
+                            placeholder="Search Patient">
+
+                    </div>
+
+                    <div class="col-md-2 d-grid">
+
+                        <button class="btn btn-primary">
+
+                            <i class="bi bi-search"></i>
+
+                            Search
+
+                        </button>
+
+                    </div>
+
+                </div>
+
+            </form>
+
+        </div>
+
+    </div>
+
+    <div class="card shadow border-0">
+
+        <div class="card-body">
+
+            <div class="table-responsive">
+
+                <table class="table table-hover align-middle">
+
+                    <thead class="table-dark">
+
+                        <tr>
+
+                            <th>ID</th>
+
+                            <th>Patient</th>
+
+                            <th>Doctor</th>
+
+                            <th>Diagnosis</th>
+
+                            <th>Date</th>
+
+                            <th width="180">
+
+                                Action
+
+                            </th>
+
+                        </tr>
+
+                    </thead>
+
+                    <tbody>
+
+                    {% if prescriptions %}
+
+                        {% for prescription in prescriptions %}
+
+                        <tr>
+
+                            <td>{{ prescription.id }}</td>
+
+                            <td>{{ prescription.patient.full_name }}</td>
+
+                            <td>{{ prescription.doctor.full_name }}</td>
+
+                            <td>
+
+                                {{ prescription.diagnosis[:40] }}{% if prescription.diagnosis|length > 40 %}...{% endif %}
+
+                            </td>
+
+                            <td>
+
+                                {{ prescription.prescription_date.strftime("%d-%m-%Y") }}
+
+                            </td>
+
+                            <td>
+
+                                <a href="{{ url_for('prescription.view_prescription', id=prescription.id) }}"
+                                    class="btn btn-primary btn-sm">
+                                    <i class="bi bi-eye"></i>
+
+                                </a>
+
+                                <a href="{{ url_for('prescription.edit_prescription', id=prescription.id) }}"
+                                    class="btn btn-warning btn-sm">
+
+                                    <i class="bi bi-pencil"></i>
+
+                                </a>
+
+                                <form
+                                    action="{{ url_for('prescription.delete_prescription', id=prescription.id) }}"
+                                    method="POST"
+                                    class="d-inline"
+                                    onsubmit="return confirm('Are you sure you want to delete this prescription?');">
+                                
+
+                                    <button
+                                        type="submit"
+                                        class="btn btn-danger btn-sm">
+                                    
+
+                                        <i class="bi bi-trash"></i>
+
+                                    </button>
+
+                            
+
+                                </form>
+
+
+                                <a href="{{ url_for('prescription.print_prescription', id=prescription.id) }}"
+                                    class="btn btn-secondary btn-sm"
+                                    target="_blank">
+
+                                    <i class="bi bi-printer"></i>
+
+                                </a>
+
+                            </td>
+
+                        </tr>
+
+                        {% endfor %}
+
+                    {% else %}
+
+                        <tr>
+
+                            <td colspan="6"
+                                class="text-center py-5">
+
+                                No prescriptions found.
+
+                            </td>
+
+                        </tr>
+
+                    {% endif %}
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}

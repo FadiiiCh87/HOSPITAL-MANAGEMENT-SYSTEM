@@ -1,0 +1,188 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<h2>Edit Appointment</h2>
+
+<hr>
+
+<form method="POST">
+
+<div class="row">
+
+    <div class="col-md-6">
+
+        <label class="form-label">
+
+            Patient
+
+        </label>
+
+        <select
+        name="patient_id"
+        class="form-select"
+        required>
+
+            {% for patient in patients %}
+
+            <option
+            value="{{ patient.id }}"
+            {% if appointment.patient_id == patient.id %}selected{% endif %}>
+
+                {{ patient.full_name }}
+
+            </option>
+
+            {% endfor %}
+
+        </select>
+
+    </div>
+
+    <div class="col-md-6">
+
+        <label class="form-label">
+
+            Doctor
+
+        </label>
+
+        <select
+        name="doctor_id"
+        class="form-select"
+        required>
+
+            {% for doctor in doctors %}
+
+            <option
+            value="{{ doctor.id }}"
+            {% if appointment.doctor_id == doctor.id %}selected{% endif %}>
+
+                {{ doctor.full_name }}
+
+            </option>
+
+            {% endfor %}
+
+        </select>
+
+    </div>
+
+</div>
+
+<br>
+
+<div class="row">
+
+    <div class="col-md-6">
+
+        <label class="form-label">
+
+            Appointment Date
+
+        </label>
+
+        <input
+        type="date"
+        name="appointment_date"
+        class="form-control"
+        value="{{ appointment.appointment_date }}"
+        required>
+
+    </div>
+
+    <div class="col-md-6">
+
+        <label class="form-label">
+
+            Appointment Time
+
+        </label>
+
+        <input
+        type="time"
+        name="appointment_time"
+        class="form-control"
+        value="{{ appointment.appointment_time.strftime('%H:%M') }}"
+        required>
+
+    </div>
+
+</div>
+
+<br>
+
+<div class="mb-3">
+
+    <label class="form-label">
+
+        Reason
+
+    </label>
+
+    <textarea
+    name="reason"
+    class="form-control"
+    rows="4">{{ appointment.reason }}</textarea>
+
+</div>
+
+<div class="mb-3">
+
+    <label class="form-label">
+
+        Status
+
+    </label>
+
+    <select
+    name="status"
+    class="form-select">
+
+        <option
+        value="Pending"
+        {% if appointment.status == "Pending" %}selected{% endif %}>
+
+            Pending
+
+        </option>
+
+        <option
+        value="Completed"
+        {% if appointment.status == "Completed" %}selected{% endif %}>
+
+            Completed
+
+        </option>
+
+        <option
+        value="Cancelled"
+        {% if appointment.status == "Cancelled" %}selected{% endif %}>
+
+            Cancelled
+
+        </option>
+
+    </select>
+
+</div>
+
+<button
+type="submit"
+class="btn btn-primary">
+
+    Update Appointment
+
+</button>
+
+<a
+href="{{ url_for('appointment.appointments') }}"
+class="btn btn-secondary">
+
+    Cancel
+
+</a>
+
+</form>
+
+{% endblock %}

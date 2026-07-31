@@ -1,0 +1,298 @@
+<div class="sidebar bg-dark text-white vh-100 p-3 shadow-lg">
+
+    <!-- Logo -->
+
+    <div class="text-center mb-4">
+
+        <h3 class="fw-bold text-info">
+
+            🏥 HMS
+
+        </h3>
+
+        <small class="text-light">
+
+            Hospital Management
+
+        </small>
+
+    </div>
+
+    <hr class="text-secondary">
+
+    <ul class="nav flex-column">
+
+        <!-- Dashboard -->
+
+        <li class="nav-item mb-1">
+
+            <a class="nav-link text-white {% if request.endpoint=='auth.dashboard' %}active{% endif %}"
+   href="{{ url_for('auth.dashboard') }}">
+
+                <i class="bi bi-speedometer2 me-2"></i>
+
+                Dashboard
+
+            </a>
+
+        </li>
+
+        <!-- Staff -->
+
+        {% if current_user.role == "Admin" %}
+
+        <li class="mt-3 mb-2 text-uppercase small text-secondary">
+
+            Staff Management
+
+        </li>
+
+        <li class="nav-item">
+
+            <a class="nav-link text-white {% if request.endpoint=='doctor.doctors' %}active{% endif %}"
+   href="{{ url_for('doctor.doctors') }}">
+
+                <i class="bi bi-person-badge me-2"></i>
+
+                Doctors
+
+            </a>
+
+        </li>
+
+        <li class="nav-item">
+
+            <a class="nav-link text-white"
+               href="{{ url_for('department.departments') }}">
+
+                <i class="bi bi-building me-2"></i>
+
+                Departments
+
+            </a>
+
+        </li>
+
+        {% endif %}
+
+        <!-- Patients -->
+
+        {% if current_user.role in ["Admin","Receptionist"] %}
+
+        <li class="mt-3 mb-2 text-uppercase small text-secondary">
+
+            Patient Management
+
+        </li>
+
+        <li class="nav-item">
+
+            <a class="nav-link text-white {% if request.endpoint=='patient.patients' %}active{% endif %}"
+   href="{{ url_for('patient.patients') }}">
+
+                <i class="bi bi-people me-2"></i>
+
+                Patients
+
+            </a>
+
+        </li>
+
+        <li class="nav-item">
+
+            <a class="nav-link text-white {% if request.endpoint=='appointment.appointments' %}active{% endif %}"
+   href="{{ url_for('appointment.appointments') }}">
+
+                <i class="bi bi-calendar-check me-2"></i>
+
+                Appointments
+
+            </a>
+
+        </li>
+
+        <li class="nav-item">
+
+            <a class="nav-link text-white {% if request.endpoint=='billing.bills' %}active{% endif %}"
+               href="{{ url_for('billing.bills') }}">
+
+                <i class="bi bi-receipt-cutoff me-2"></i>
+
+                Billing
+
+            </a>
+
+        </li>
+
+        {% endif %}
+
+        <!-- Pharmacy -->
+
+        {% if current_user.role in ["Admin","Pharmacist"] %}
+
+        <li class="mt-3 mb-2 text-uppercase small text-secondary">
+
+            Pharmacy
+
+        </li>
+
+        <li class="nav-item">
+
+            <a class="nav-link text-white {% if request.endpoint=='medicine.medicines' %}active{% endif %}"
+   href="{{ url_for('medicine.medicines') }}">
+
+                <i class="bi bi-capsule me-2"></i>
+
+                Medicines
+
+            </a>
+
+        </li>
+
+        <li class="nav-item">
+
+            <a class="nav-link text-white {% if request.endpoint=='category.categories' %}active{% endif %}"
+   href="{{ url_for('category.categories') }}">
+
+                <i class="bi bi-tags-fill me-2"></i>
+
+                Categories
+
+            </a>
+
+        </li>
+
+        {% endif %}
+
+        <!-- Laboratory -->
+
+        {% if current_user.role in ["Admin","Pharmacist"] %}
+
+        <li class="mt-3 mb-2 text-uppercase small text-secondary">
+
+            Laboratory
+
+        </li>
+
+        <li class="nav-item">
+
+            <a class="nav-link text-white"
+               href="{{ url_for('laboratory.laboratory') }}">
+
+                <i class="bi bi-flask me-2"></i>
+
+                Laboratory
+
+            </a>
+
+        </li>
+
+        {% endif %}
+
+        {% if current_user.role in ["Admin","Receptionist"] %}
+
+        <li class="nav-item">
+
+            <a class="nav-link text-white"
+               href="{{ url_for('lab_request.lab_requests') }}">
+
+                <i class="bi bi-clipboard2-pulse me-2"></i>
+
+                Lab Requests
+
+            </a>
+
+        </li>
+
+        {% endif %}
+
+        <!-- Prescription -->
+
+        <li class="mt-3 mb-2 text-uppercase small text-secondary">
+
+            Medical
+
+        </li>
+
+        <li class="nav-item">
+
+            <a class="nav-link text-white"
+               href="{{ url_for('prescription.prescriptions') }}">
+
+                <i class="bi bi-file-earmark-medical me-2"></i>
+
+                Prescriptions
+
+            </a>
+
+        </li>
+
+        <!-- Reports -->
+
+        {% if current_user.role=="Admin" %}
+
+        <li class="mt-3 mb-2 text-uppercase small text-secondary">
+
+            Reports
+
+        </li>
+
+        <li class="nav-item">
+
+            <a class="nav-link text-white"
+               href="{{ url_for('report.revenue_report') }}">
+
+                <i class="bi bi-graph-up me-2"></i>
+
+                Revenue Report
+
+            </a>
+
+        </li>
+
+        <li class="nav-item">
+
+            <a class="nav-link text-white"
+               href="{{ url_for('report.appointment_report') }}">
+
+                <i class="bi bi-calendar3 me-2"></i>
+
+                Appointment Report
+
+            </a>
+
+        </li>
+
+        <li class="nav-item">
+
+            <a class="nav-link text-white"
+               href="{{ url_for('user.users') }}">
+
+                <i class="bi bi-people-fill me-2"></i>
+
+                User Management
+
+            </a>
+
+        </li>
+
+        {% endif %}
+
+        <hr class="text-secondary mt-4">
+
+        <li class="nav-item">
+
+            <a class="nav-link text-danger"
+               href="{{ url_for('auth.logout') }}">
+
+                <i class="bi bi-box-arrow-right me-2"></i>
+
+                Logout
+
+            </a>
+
+        </li>
+
+    </ul>
+
+</div>

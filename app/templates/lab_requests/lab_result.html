@@ -1,0 +1,189 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="container-fluid">
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+
+        <div>
+
+            <h2 class="fw-bold">
+
+                Laboratory Result
+
+            </h2>
+
+            <p class="text-muted">
+
+                Update laboratory result.
+
+            </p>
+
+        </div>
+
+        <a
+            href="{{ url_for('lab_request.lab_requests') }}"
+            class="btn btn-secondary">
+
+            <i class="bi bi-arrow-left"></i>
+
+            Back
+
+        </a>
+
+    </div>
+
+    <div class="card shadow border-0">
+
+        <div class="card-body">
+
+            <form method="POST">
+
+                <div class="row">
+
+                    <div class="col-md-6 mb-3">
+
+                        <label class="form-label">
+
+                            Patient
+
+                        </label>
+
+                        <input
+                            type="text"
+                            class="form-control"
+                            value="{{ request_data.patient.full_name }}"
+                            readonly>
+
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+
+                        <label class="form-label">
+
+                            Doctor
+
+                        </label>
+
+                        <input
+                            type="text"
+                            class="form-control"
+                            value="{{ request_data.doctor.full_name }}"
+                            readonly>
+
+                    </div>
+
+                </div>
+
+                <div class="row">
+
+                    <div class="col-md-6 mb-3">
+
+                        <label class="form-label">
+
+                            Laboratory Test
+
+                        </label>
+
+                        <input
+                            type="text"
+                            class="form-control"
+                            value="{{ request_data.laboratory.test_name }}"
+                            readonly>
+
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+
+                        <label class="form-label">
+
+                            Request Date
+
+                        </label>
+
+                        <input
+                            type="text"
+                            class="form-control"
+                            value="{{ request_data.request_date.strftime('%d-%m-%Y') }}"
+                            readonly>
+
+                    </div>
+
+                </div>
+
+                <div class="mb-3">
+
+                    <label class="form-label">
+
+                        Result
+
+                    </label>
+
+                    <textarea
+                        name="result"
+                        rows="8"
+                        class="form-control"
+                        placeholder="Enter laboratory result here...">{{ request_data.result or "" }}</textarea>
+
+                </div>
+
+                <div class="mb-4">
+
+                    <label class="form-label">
+
+                        Status
+
+                    </label>
+
+                    <select
+                        name="status"
+                        class="form-select">
+
+                        <option
+                            value="Pending"
+                            {% if request_data.status=="Pending" %}selected{% endif %}>
+
+                            Pending
+
+                        </option>
+
+                        <option
+                            value="Completed"
+                            {% if request_data.status=="Completed" %}selected{% endif %}>
+
+                            Completed
+
+                        </option>
+
+                    </select>
+
+                </div>
+
+                <button
+                    type="submit"
+                    class="btn btn-success">
+
+                    <i class="bi bi-check-circle"></i>
+
+                    Save Result
+
+                </button>
+
+                <a
+                    href="{{ url_for('lab_request.lab_requests') }}"
+                    class="btn btn-secondary">
+
+                    Cancel
+
+                </a>
+
+            </form>
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}
