@@ -1,14 +1,21 @@
-from flask import Flask
+import os
+
+from flask import Flask, jsonify
+from sqlalchemy import text
 from config import Config
 
 from app.extensions import db, migrate, login_manager
 
 
-def create_app():
+def create_app(test_config=None):
 
     app = Flask(__name__)
 
     app.config.from_object(Config)
+    if test_config:
+        app.config.update(test_config)
+
+    os.makedirs(app.config["UPLOAD_FOLDER"], exist_ok=True)
 
     # Initialize Extensions
     db.init_app(app)
@@ -45,7 +52,7 @@ def create_app():
     # Flask-Login User Loader
     @login_manager.user_loader
     def load_user(user_id):
-        return Admin.query.get(int(user_id))
+        return db.session.get(Admin, int(user_id))
 
     # Register Blueprints
     from app.routes.auth import auth_bp
@@ -63,4 +70,14 @@ def create_app():
     app.register_blueprint(laboratory_bp)
     app.register_blueprint(lab_request_bp)
     app.register_blueprint(prescription_bp)
+
+    @app.get("/health")
+    def health():
+        try:
+            db.session.execute(text("SELECT 1"))
+        except Exception:
+            app.logger.exception("Database health check failed")
+            return jsonify(status="unhealthy"), 503
+        return jsonify(status="ok"), 200
+
     return app

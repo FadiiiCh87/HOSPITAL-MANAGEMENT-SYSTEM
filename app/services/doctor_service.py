@@ -1,6 +1,6 @@
-import os
-import uuid
-from flask import current_app, flash, redirect, url_for
+from io import BytesIO
+
+from PIL import Image, UnidentifiedImageError
 from sqlalchemy.exc import IntegrityError
 from app.extensions import db
 from sqlalchemy import or_
@@ -56,17 +56,34 @@ def get_doctor(id):
 
 
 def get_departments():
-
-
-
     return Department.query.all()
+
+
+def _read_photo(files):
+    photo = files.get("photo")
+    if not photo or not photo.filename:
+        return None, None, None
+
+    extension = photo.filename.rsplit(".", 1)[-1].lower()
+    if extension not in {"png", "jpg", "jpeg"}:
+        return False, None, "Only JPG, JPEG and PNG images are allowed."
+
+    image_data = photo.read()
+    try:
+        with Image.open(BytesIO(image_data)) as image:
+            image.verify()
+    except (UnidentifiedImageError, OSError):
+        return False, None, "The uploaded file is not a valid image."
+
+    mimetype = "image/png" if extension == "png" else "image/jpeg"
+    return image_data, mimetype, None
 
 def create_doctor(form, files):
 
-    full_name = form["full_name"]
+    full_name = form["full_name"].strip()
     department_id = int(form["department_id"])
     phone = form["phone"]
-    email = form["email"]
+    email = form["email"].strip().lower()
     gender = form["gender"]
     experience = int(form["experience"])
 
@@ -75,27 +92,9 @@ def create_doctor(form, files):
     if existing:
         return False, "Doctor email already exists."
 
-    photo_name = ""
-
-    photo = files.get("photo")
-
-    if photo and photo.filename != "":
-
-        extension = photo.filename.rsplit(".", 1)[1].lower()
-
-        if extension not in {"png", "jpg", "jpeg"}:
-            return False, "Only JPG, JPEG and PNG images are allowed."
-
-        filename = f"{uuid.uuid4()}.{extension}"
-
-        photo.save(
-            os.path.join(
-                current_app.config["UPLOAD_FOLDER"],
-                filename
-            )
-        )
-
-        photo_name = filename
+    photo_data, photo_mimetype, error = _read_photo(files)
+    if error:
+        return False, error
 
     doctor = Doctor(
 
@@ -105,7 +104,9 @@ def create_doctor(form, files):
         email=email,
         gender=gender,
         experience=experience,
-        photo=photo_name
+        photo="" if photo_data else None,
+        photo_data=photo_data or None,
+        photo_mimetype=photo_mimetype,
 
     )
 
@@ -115,51 +116,30 @@ def create_doctor(form, files):
     return True, "Doctor Added Successfully!"
 
 def update_doctor(doctor, form, files):
-
-    doctor.full_name = form["full_name"]
-    doctor.department_id = int(form["department_id"])
-    doctor.phone = form["phone"]
-    doctor.email = form["email"]
-    doctor.gender = form["gender"]
-    doctor.experience = int(form["experience"])
+    email = form["email"].strip().lower()
 
     existing = Doctor.query.filter(
-        Doctor.email == doctor.email,
+        Doctor.email == email,
         Doctor.id != doctor.id
     ).first()
 
     if existing:
         return False, "Email already exists."
 
-    photo = files.get("photo")
+    doctor.full_name = form["full_name"].strip()
+    doctor.department_id = int(form["department_id"])
+    doctor.phone = form["phone"].strip()
+    doctor.email = email
+    doctor.gender = form["gender"]
+    doctor.experience = int(form["experience"])
 
-    if photo and photo.filename != "":
-
-        extension = photo.filename.rsplit(".", 1)[1].lower()
-
-        if extension not in {"png", "jpg", "jpeg"}:
-            return False, "Only JPG, JPEG and PNG images are allowed."
-
-        if doctor.photo:
-
-            old_path = os.path.join(
-                current_app.config["UPLOAD_FOLDER"],
-                doctor.photo
-            )
-
-            if os.path.exists(old_path):
-                os.remove(old_path)
-
-        filename = f"{uuid.uuid4()}.{extension}"
-
-        photo.save(
-            os.path.join(
-                current_app.config["UPLOAD_FOLDER"],
-                filename
-            )
-        )
-
-        doctor.photo = filename
+    photo_data, photo_mimetype, error = _read_photo(files)
+    if error:
+        return False, error
+    if photo_data:
+        doctor.photo = ""
+        doctor.photo_data = photo_data
+        doctor.photo_mimetype = photo_mimetype
 
     db.session.commit()
 
@@ -169,16 +149,6 @@ def update_doctor(doctor, form, files):
 def delete_doctor_record(doctor):
 
     try:
-
-        if doctor.photo:
-
-            image_path = os.path.join(
-                current_app.config["UPLOAD_FOLDER"],
-                doctor.photo
-            )
-
-            if os.path.exists(image_path):
-                os.remove(image_path)
 
         db.session.delete(doctor)
         db.session.commit()

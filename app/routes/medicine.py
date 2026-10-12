@@ -49,7 +49,8 @@ def medicines():
     medicines = get_medicines(
         search,
         sort,
-        filter_by
+        filter_by,
+        page,
     )
 
     return render_template(

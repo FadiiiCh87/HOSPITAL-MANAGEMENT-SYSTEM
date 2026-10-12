@@ -5,7 +5,7 @@ from app.extensions import db
 from app.models.medicine import Medicine
 
 
-def get_medicines(search, sort, filter_by="") :
+def get_medicines(search, sort, filter_by="", page=1):
 
     query = Medicine.query
 

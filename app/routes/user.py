@@ -146,7 +146,7 @@ def edit_user(id):
         "users/edit_user.html",
         user=user
     )
-@user_bp.route("/users/delete/<int:id>")
+@user_bp.route("/users/delete/<int:id>", methods=["POST"])
 @login_required
 @admin_required
 def delete_user(id):

@@ -26,9 +26,6 @@ billing_bp = Blueprint("billing", __name__)
 @billing_bp.route("/billing")
 @login_required
 def bills():
-
-    print("===== NEW BILLING ROUTE LOADED =====")
-
     search = request.args.get("search", "").strip()
 
     status = request.args.get("status", "").strip()

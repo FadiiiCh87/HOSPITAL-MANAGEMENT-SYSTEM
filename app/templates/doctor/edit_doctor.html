@@ -133,7 +133,16 @@
 
             <br>
 
-            {% if doctor.photo %}
+            {% if doctor.photo_data %}
+
+            <img
+                src="{{ url_for('doctor.doctor_photo', id=doctor.id) }}"
+                width="120"
+                height="120"
+                class="rounded-circle border shadow"
+                style="object-fit: cover;">
+
+            {% elif doctor.photo %}
 
             <img
                 src="{{ url_for('static', filename='uploads/doctors/' + doctor.photo) }}"

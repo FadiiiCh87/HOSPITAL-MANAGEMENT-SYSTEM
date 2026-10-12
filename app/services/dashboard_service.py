@@ -71,9 +71,11 @@ def get_dashboard_data():
         .all()
     )
 
+    today = datetime.date.today()
+
     expired_medicines = (
         Medicine.query
-        .filter(Medicine.expiry_date < db.func.curdate())
+        .filter(Medicine.expiry_date < today)
         .all()
     )
 
@@ -121,14 +123,13 @@ def get_dashboard_data():
     else:
         total_revenue = 0
 
-    today = datetime.date.today()
-
     if bill_amount_column is not None and bill_date_column is not None:
-        today_bill_count = Bill.query.filter(bill_date_column == today).count()
+        today_filter = db.cast(bill_date_column, db.Date) == today
+        today_bill_count = Bill.query.filter(today_filter).count()
         today_revenue = (
             Bill.query
             .with_entities(db.func.coalesce(db.func.sum(bill_amount_column), 0))
-            .filter(bill_date_column == today)
+            .filter(today_filter)
             .scalar()
             or 0
         )
@@ -169,10 +170,4 @@ def get_dashboard_data():
         "today_revenue": float(today_revenue),
         "laboratory_count": laboratory_count,
         "available_doctors": available_doctors,
-        
-
-
-
     }
-
-    

@@ -5,7 +5,9 @@ from flask import (
     redirect,
     url_for,
     flash,
-    current_app
+    current_app,
+    abort,
+    Response,
 )
 from app.services.doctor_service import (
     get_doctors,
@@ -18,6 +20,19 @@ from app.services.doctor_service import (
 from flask_login import login_required
 
 doctor_bp = Blueprint("doctor", __name__)
+
+
+@doctor_bp.route("/doctors/<int:id>/photo")
+@login_required
+def doctor_photo(id):
+    doctor = get_doctor(id)
+    if not doctor.photo_data:
+        abort(404)
+    return Response(
+        doctor.photo_data,
+        mimetype=doctor.photo_mimetype or "application/octet-stream",
+        headers={"Cache-Control": "private, max-age=86400"},
+    )
 
 # ======================================================
 # Doctors List
