@@ -165,3 +165,68 @@ class PortalTests(unittest.TestCase):
         with self.app.app_context():
             lab=LabRequest.query.order_by(LabRequest.id.desc()).first()
             self.assertEqual((lab.patient_id,lab.doctor_id,lab.status),(1,1,'Pending'))
+
+    def test_doctor_owns_schedule_admin_can_manage_all(self):
+        self.login('doctor')
+        self.assertEqual(self.client.get('/staff/availability').status_code,200)
+        self.assertEqual(self.client.post('/staff/availability',data={'doctor':2,'action':'remove_day','weekday':0}).status_code,403)
+        r=self.client.post('/staff/availability',data={'doctor':1,'action':'schedule','weekdays':['0','1'],'start':'10:00','end':'12:00','minutes':30},follow_redirects=True)
+        self.assertEqual(r.status_code,200)
+        with self.app.app_context():self.assertEqual(DoctorSchedule.query.filter_by(doctor_id=1,weekday=0).one().start_time,time(10))
+        self.client.get('/logout');self.login('admin')
+        self.assertEqual(self.client.post('/staff/availability',data={'doctor':2,'action':'schedule','weekdays':['2'],'start':'08:00','end':'10:00','minutes':30}).status_code,302)
+        with self.app.app_context():self.assertEqual(DoctorSchedule.query.filter_by(doctor_id=2,weekday=2).count(),1)
+
+    def test_leave_blocks_overlapping_slots_and_booking_without_leaking_reason(self):
+        self.login('doctor')
+        data={'doctor':1,'action':'unavailable','starts_at':str(self.day)+'T09:45','ends_at':str(self.day)+'T10:15','reason':'PRIVATE-EMERGENCY'}
+        self.assertEqual(self.client.post('/staff/availability',data=data).status_code,302)
+        self.client.get('/logout')
+        page=self.client.get('/book',query_string={'doctor':1,'date':str(self.day)})
+        self.assertIn(b'Not available',page.data);self.assertNotIn(b'PRIVATE-EMERGENCY',page.data)
+        from app.portal import available
+        with self.app.app_context():
+            slots=available(1,self.day)
+            self.assertNotIn('09:30',slots);self.assertNotIn('10:00',slots);self.assertIn('10:30',slots)
+        self.login()
+        self.client.post('/book',data={'doctor':1,'date':str(self.day),'time':'09:30'})
+        with self.app.app_context():self.assertEqual(Appointment.query.count(),2)
+
+    def test_leave_existing_booking_warning_and_remove_restores_slots(self):
+        self.login('doctor')
+        self.client.post('/staff/availability',data={'doctor':1,'action':'unavailable','starts_at':str(self.day)+'T00:00','ends_at':str(self.day+timedelta(days=1))+'T00:00','reason':'Leave'})
+        page=self.client.get('/staff/availability');self.assertIn(b'contact patient',page.data)
+        with self.app.app_context():
+            self.assertEqual(db.session.get(Appointment,1).status,'Confirmed');period=DoctorUnavailability.query.one().id
+        self.client.get('/logout');self.login()
+        self.assertIn(b'Your doctor is unavailable',self.client.get('/patient/dashboard').data)
+        self.assertEqual(self.client.post('/patient/appointments/1/reschedule',data={'date':str(self.day),'time':'10:30'}).status_code,409)
+        self.client.post('/patient/logout');self.login('doctor')
+        self.client.post('/staff/availability',data={'doctor':1,'action':'remove_unavailable','period':period})
+        from app.portal import available
+        with self.app.app_context():self.assertIn('10:30',available(1,self.day))
+
+    def test_unavailability_permissions_invalid_range_and_remove_day(self):
+        self.login()
+        self.assertEqual(self.client.get('/staff/availability').status_code,403)
+        self.client.post('/patient/logout');self.login('doctor')
+        self.client.post('/staff/availability',data={'doctor':1,'action':'unavailable','starts_at':str(self.day)+'T12:00','ends_at':str(self.day)+'T09:00'})
+        with self.app.app_context():self.assertEqual(DoctorUnavailability.query.count(),0)
+        self.client.post('/staff/availability',data={'doctor':1,'action':'remove_day','weekday':self.day.weekday()})
+        page=self.client.get('/book',query_string={'doctor':1,'date':str(self.day)})
+        self.assertIn(b'has not published working hours',page.data)
+
+    def test_changed_grid_does_not_offer_overlapping_existing_booking(self):
+        self.login('doctor')
+        self.client.post('/staff/availability',data={'doctor':1,'action':'schedule','weekdays':[str(self.day.weekday())],'start':'09:15','end':'12:00','minutes':15})
+        from app.portal import available
+        with self.app.app_context():
+            slots=available(1,self.day);self.assertNotIn('09:15',slots);self.assertIn('09:30',slots)
+
+    def test_doctor_cannot_remove_another_doctors_leave(self):
+        with self.app.app_context():
+            p=DoctorUnavailability(doctor_id=2,starts_at=datetime.combine(self.day,time(9)),ends_at=datetime.combine(self.day,time(11)),reason='Private leave')
+            db.session.add(p);db.session.commit();pid=p.id
+        self.login('doctor')
+        self.assertEqual(self.client.post('/staff/availability',data={'doctor':1,'action':'remove_unavailable','period':pid}).status_code,403)
+        with self.app.app_context():self.assertIsNotNone(db.session.get(DoctorUnavailability,pid))

@@ -20,6 +20,10 @@ with app.app_context():
             db.session.commit()
 
     db.create_all()
+    from sqlalchemy import inspect
+    if 'duration_minutes' not in {c['name'] for c in inspect(db.engine).get_columns('appointments')}:
+        db.session.execute(text('ALTER TABLE appointments ADD COLUMN duration_minutes INTEGER NOT NULL DEFAULT 30'))
+        db.session.commit()
     # Additive V2 migration, run as the application schema owner.
     from app.models.appointment import Appointment
     for index in Appointment.__table__.indexes:

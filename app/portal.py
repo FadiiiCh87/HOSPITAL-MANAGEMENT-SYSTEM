@@ -9,11 +9,12 @@ from flask import Blueprint, abort, current_app, flash, jsonify, redirect, rende
 from flask_login import current_user, login_required, login_user, logout_user
 from werkzeug.security import generate_password_hash, check_password_hash
 from sqlalchemy.exc import IntegrityError
+from sqlalchemy import text
 from itsdangerous import URLSafeTimedSerializer, BadSignature, SignatureExpired
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer
 from reportlab.lib.styles import getSampleStyleSheet
 from app.extensions import db
-from app.models.portal import PatientAccount, DoctorAccount, DoctorSchedule, Checkup, PublishedReport, AuditEvent, LoginAttempt
+from app.models.portal import PatientAccount, DoctorAccount, DoctorSchedule, DoctorUnavailability, Checkup, PublishedReport, AuditEvent, LoginAttempt
 from app.models.patient import Patient
 from app.models.doctor import Doctor
 from app.models.department import Department
@@ -65,16 +66,41 @@ def throttle(label):
     if LoginAttempt.query.filter(LoginAttempt.key==key, LoginAttempt.created_at>cutoff).count()>=10: abort(429)
     db.session.add(LoginAttempt(key=key)); db.session.commit()
 
+def lock_doctor(did):
+    # Serialize bookings and schedule changes for a doctor on production PostgreSQL.
+    if did and db.engine.dialect.name == 'postgresql':
+        db.session.execute(text('SELECT pg_advisory_xact_lock(72418, :doctor)'), {'doctor': did})
+
+def slot_states(did, day, exclude=None):
+    clock = now()
+    schedule = DoctorSchedule.query.filter_by(doctor_id=did, weekday=day.weekday()).first()
+    if not schedule or day < clock.date() or day > clock.date()+timedelta(days=90): return []
+    if schedule.slot_minutes <= 0: return []
+    appointments = Appointment.query.filter(Appointment.doctor_id==did, Appointment.appointment_date==day, Appointment.status!='Cancelled')
+    if exclude: appointments = appointments.filter(Appointment.id!=exclude)
+    booked = [(datetime.combine(day,x.appointment_time), datetime.combine(day,x.appointment_time)+timedelta(minutes=x.duration_minutes or 30)) for x in appointments]
+    periods = DoctorUnavailability.query.filter(DoctorUnavailability.doctor_id==did, DoctorUnavailability.starts_at < datetime.combine(day+timedelta(days=1),time.min), DoctorUnavailability.ends_at > datetime.combine(day,time.min)).all()
+    point = datetime.combine(day,schedule.start_time); end = datetime.combine(day,schedule.end_time)
+    states = []
+    while point+timedelta(minutes=schedule.slot_minutes) <= end:
+        finish = point+timedelta(minutes=schedule.slot_minutes)
+        status = 'Available'
+        if point <= clock: status = 'Time passed'
+        elif any(point < p.ends_at and finish > p.starts_at for p in periods): status = 'Not available'
+        elif any(point < finish_at and finish > start_at for start_at, finish_at in booked): status = 'Booked'
+        states.append({'time': point.strftime('%H:%M'), 'status': status})
+        point = finish
+    return states
+
 def available(did, day, exclude=None):
-    schedule=DoctorSchedule.query.filter_by(doctor_id=did,weekday=day.weekday()).first()
-    if not schedule or day<now().date() or day>now().date()+timedelta(days=90): return []
-    booked={x.appointment_time for x in Appointment.query.filter(Appointment.doctor_id==did,Appointment.appointment_date==day,Appointment.status!='Cancelled',Appointment.id!=exclude if exclude else True)}
-    point=datetime.combine(day,schedule.start_time); end=datetime.combine(day,schedule.end_time)
-    slots=[]
-    while point+timedelta(minutes=schedule.slot_minutes)<=end:
-        if point>now() and point.time() not in booked: slots.append(point.strftime('%H:%M'))
-        point+=timedelta(minutes=schedule.slot_minutes)
-    return slots
+    return [s['time'] for s in slot_states(did,day,exclude) if s['status']=='Available']
+
+def availability_message(did, day):
+    if day < now().date(): return 'This date has passed. Choose a future date.'
+    if day > now().date()+timedelta(days=90): return 'Bookings open up to 90 days ahead.'
+    if not DoctorSchedule.query.filter_by(doctor_id=did).first(): return 'This doctor has not published working hours yet. Please contact reception.'
+    if not DoctorSchedule.query.filter_by(doctor_id=did,weekday=day.weekday()).first(): return 'This doctor does not have working hours on this weekday. Choose another day.'
+    return 'No bookable slots remain on this date. Unavailable, booked and past times are shown below.'
 
 @portal.get('/')
 def home():
@@ -173,6 +199,7 @@ def book():
     raw=request.values.get('date',now().date().isoformat())
     try:day=date.fromisoformat(raw)
     except ValueError:abort(400)
+    if request.method=='POST' and doctor: lock_doctor(did)
     slots=available(did,day) if doctor else []
     if request.method=='POST':
         if not current_user.is_authenticated:
@@ -182,11 +209,11 @@ def book():
         slot=request.form.get('time','')
         if slot not in slots:flash('That slot is unavailable. Choose another.','warning')
         else:
-            ap=Appointment(patient_id=current_user.patient_id,doctor_id=did,appointment_date=day,appointment_time=time.fromisoformat(slot),reason=request.form.get('reason','')[:2000],status='Confirmed')
+            ap=Appointment(duration_minutes=DoctorSchedule.query.filter_by(doctor_id=did,weekday=day.weekday()).first().slot_minutes,patient_id=current_user.patient_id,doctor_id=did,appointment_date=day,appointment_time=time.fromisoformat(slot),reason=request.form.get('reason','')[:2000],status='Confirmed')
             try:
                 db.session.add(ap);db.session.flush();audit('appointment_booked',ap.id);db.session.commit();session.pop('pending_booking',None);flash(f'Appointment #{ap.id} confirmed.','success');return redirect(url_for('portal.patient_dashboard'))
             except IntegrityError:db.session.rollback();flash('Another booking just reserved that slot. Choose a new slot.','warning')
-    return render_template('portal/book.html',doctors=Doctor.query.order_by(Doctor.full_name).all(),doctor=doctor,day=day,slots=slots,minimum=now().date(),maximum=now().date()+timedelta(days=90),pending=session.get('pending_booking',{}))
+    return render_template('portal/book.html',doctors=Doctor.query.order_by(Doctor.full_name).all(),doctor=doctor,day=day,slots=slots,slot_states=slot_states(did,day) if doctor else [],availability_message=availability_message(did,day) if doctor else '',minimum=now().date(),maximum=now().date()+timedelta(days=90),pending=session.get('pending_booking',{}))
 
 @portal.get('/patient/dashboard')
 @require_role('Patient')
@@ -203,7 +230,7 @@ def patient_dashboard():
     upcoming=[a for a in appointments if datetime.combine(a.appointment_date,a.appointment_time)>now() and a.status in ('Pending','Confirmed')]
     upcoming.sort(key=lambda a:(a.appointment_date,a.appointment_time))
     audit('medical_history_viewed',current_user.patient_id);db.session.commit()
-    return render_template('portal/dashboard.html',appointments=appointments,prescriptions=prescriptions,reports=reports,lab_requests=lab_requests,checkups=checkups,timeline=timeline,upcoming=upcoming,clock=now(),since=since,until=until)
+    return render_template('portal/dashboard.html',appointments=appointments,prescriptions=prescriptions,reports=reports,lab_requests=lab_requests,checkups=checkups,timeline=timeline,upcoming=upcoming,availability_warnings=[ap.id for ap in appointments if ap.status in ('Pending','Confirmed') and datetime.combine(ap.appointment_date,ap.appointment_time)>now() and ap.appointment_time.strftime('%H:%M') not in available(ap.doctor_id,ap.appointment_date,ap.id)],clock=now(),since=since,until=until)
 
 @portal.post('/patient/appointments/<int:id>/cancel')
 @require_role('Patient')
@@ -219,14 +246,15 @@ def reschedule(id):
     if ap.status not in ('Pending','Confirmed') or datetime.combine(ap.appointment_date,ap.appointment_time)<now()+timedelta(hours=CANCEL_HOURS):abort(400)
     try:day=date.fromisoformat(request.values.get('date',ap.appointment_date.isoformat()))
     except ValueError:abort(400)
+    if request.method=='POST': lock_doctor(ap.doctor_id)
     slots=available(ap.doctor_id,day,ap.id)
     if request.method=='POST':
         if request.form.get('time') not in slots:abort(409)
-        ap.appointment_date=day;ap.appointment_time=time.fromisoformat(request.form['time']);ap.status='Confirmed'
+        ap.appointment_date=day;ap.appointment_time=time.fromisoformat(request.form['time']);ap.duration_minutes=DoctorSchedule.query.filter_by(doctor_id=ap.doctor_id,weekday=day.weekday()).first().slot_minutes;ap.status='Confirmed'
         try:audit('appointment_rescheduled',id);db.session.commit()
         except IntegrityError:db.session.rollback();abort(409)
         flash('Appointment rescheduled.','success');return redirect(url_for('portal.patient_dashboard'))
-    return render_template('portal/book.html',doctors=[ap.doctor],doctor=ap.doctor,day=day,slots=slots,reschedule=ap,minimum=now().date(),maximum=now().date()+timedelta(days=90),pending=session.get('pending_booking',{}))
+    return render_template('portal/book.html',doctors=[ap.doctor],doctor=ap.doctor,day=day,slots=slots,slot_states=slot_states(ap.doctor_id,day,ap.id),availability_message=availability_message(ap.doctor_id,day),reschedule=ap,minimum=now().date(),maximum=now().date()+timedelta(days=90),pending=session.get('pending_booking',{}))
 
 def pdf_document(title,lines,filename):
     out=io.BytesIO();styles=getSampleStyleSheet();story=[Paragraph(escape(title),styles['Title']),Spacer(1,18)]
@@ -286,8 +314,8 @@ def admin_portal():
         action=request.form.get('action')
         try:
             if action=='schedule':
-                did=int(request.form['doctor']);db.get_or_404(Doctor,did);weekday=int(request.form['weekday']);minutes=int(request.form['minutes']);start=time.fromisoformat(request.form['start']);end=time.fromisoformat(request.form['end'])
-                if weekday not in range(7) or minutes not in (15,20,30,45,60) or start>=end:raise ValueError('Invalid schedule.')
+                did=int(request.form['doctor']);db.get_or_404(Doctor,did);lock_doctor(did);weekday=int(request.form['weekday']);minutes=int(request.form['minutes']);start=time.fromisoformat(request.form['start']);end=time.fromisoformat(request.form['end'])
+                if weekday not in range(7) or minutes not in (15,20,30,45,60) or start>=end or datetime.combine(date.today(),start)+timedelta(minutes=minutes)>datetime.combine(date.today(),end):raise ValueError('Invalid schedule.')
                 s=DoctorSchedule.query.filter_by(doctor_id=did,weekday=weekday).first() or DoctorSchedule(doctor_id=did,weekday=weekday)
                 s.start_time=start;s.end_time=end;s.slot_minutes=minutes;db.session.add(s);audit('schedule_updated',did)
             elif action=='doctor_account':
@@ -340,3 +368,55 @@ def request_test(id):
     db.session.commit()
     flash('Laboratory test requested.', 'success')
     return redirect(url_for('portal.consultation', id=ap.id))
+
+
+@portal.route('/staff/availability', methods=['GET','POST'])
+@require_role('Admin','Doctor')
+def manage_availability():
+    doctors = Doctor.query.order_by(Doctor.full_name).all() if current_user.role=='Admin' else [db.get_or_404(Doctor,doctor_id())]
+    did = request.values.get('doctor', type=int)
+    if current_user.role=='Doctor':
+        own = doctor_id()
+        if did and did != own: abort(403)
+        did = own
+    elif not did and doctors: did = doctors[0].id
+    selected = db.get_or_404(Doctor,did) if did else None
+    if request.method=='POST':
+        if not selected: abort(400)
+        lock_doctor(did)
+        try:
+            action = request.form.get('action')
+            if action=='schedule':
+                weekdays = [int(x) for x in request.form.getlist('weekdays')]
+                start = time.fromisoformat(request.form['start']); end = time.fromisoformat(request.form['end']); minutes = int(request.form['minutes'])
+                if not weekdays or any(x not in range(7) for x in weekdays) or start>=end or minutes not in (15,20,30,45,60) or datetime.combine(date.today(),start)+timedelta(minutes=minutes)>datetime.combine(date.today(),end): raise ValueError('Choose working days and valid hours with at least one complete slot.')
+                for weekday in set(weekdays):
+                    schedule=DoctorSchedule.query.filter_by(doctor_id=did,weekday=weekday).first() or DoctorSchedule(doctor_id=did,weekday=weekday)
+                    schedule.start_time=start;schedule.end_time=end;schedule.slot_minutes=minutes;db.session.add(schedule)
+                audit('weekly_availability_updated',did)
+            elif action=='remove_day':
+                weekday=int(request.form['weekday'])
+                if weekday not in range(7): raise ValueError('Invalid weekday.')
+                DoctorSchedule.query.filter_by(doctor_id=did,weekday=weekday).delete()
+                audit('working_day_removed',did)
+            elif action=='unavailable':
+                start=datetime.fromisoformat(request.form['starts_at']);end=datetime.fromisoformat(request.form['ends_at'])
+                if start.tzinfo or end.tzinfo or start>=end or end<=now(): raise ValueError('Choose a valid future unavailability period in Saudi Arabia time.')
+                reason=request.form.get('reason','Unavailable').strip()[:200] or 'Unavailable'
+                db.session.add(DoctorUnavailability(doctor_id=did,starts_at=start,ends_at=end,reason=reason))
+                audit('doctor_unavailability_added',did)
+            elif action=='remove_unavailable':
+                period=db.get_or_404(DoctorUnavailability,request.form.get('period',type=int))
+                if period.doctor_id!=did: abort(403)
+                db.session.delete(period);audit('doctor_unavailability_removed',did)
+            else: abort(400)
+            db.session.commit()
+            flash('Availability saved. Review affected bookings below; existing appointments were not cancelled.', 'success')
+        except (ValueError,KeyError):
+            db.session.rollback();flash('Invalid dates, days or hours. End time must follow start time.', 'danger')
+        return redirect(url_for('portal.manage_availability',doctor=did))
+    schedules=DoctorSchedule.query.filter_by(doctor_id=did).order_by(DoctorSchedule.weekday).all() if selected else []
+    periods=DoctorUnavailability.query.filter_by(doctor_id=did).filter(DoctorUnavailability.ends_at>now()).order_by(DoctorUnavailability.starts_at).all() if selected else []
+    upcoming=Appointment.query.filter(Appointment.doctor_id==did,Appointment.appointment_date>=now().date(),Appointment.status.in_(['Pending','Confirmed'])).all() if selected else []
+    affected=[ap for ap in upcoming if datetime.combine(ap.appointment_date,ap.appointment_time)>now() and ap.appointment_time.strftime('%H:%M') not in available(did,ap.appointment_date,ap.id)]
+    return render_template('portal/availability.html',doctors=doctors,selected=selected,schedules=schedules,periods=periods,affected=affected)

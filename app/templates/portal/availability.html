@@ -1,0 +1,25 @@
+{% extends 'base.html' if current_user.role == 'Admin' else 'portal/base.html' %}
+{% block content %}
+<h1>Doctor hours & leave</h1>
+<p>All times use Saudi Arabia (UTC+3). Set weekly working hours, then block leave or emergency periods. Private reasons are visible only to staff.</p>
+{% if current_user.role == 'Admin' %}<form method="get"><label for="doctor">Doctor</label><select class="form-select" name="doctor" id="doctor">{% for d in doctors %}<option value="{{ d.id }}" {% if selected and selected.id == d.id %}selected{% endif %}>{{ d.full_name }}</option>{% endfor %}</select><button class="btn btn-primary mt-2">Select doctor</button></form>{% endif %}
+{% if selected %}
+<h2>{{ selected.full_name }}</h2>
+<div class="card p-4 mb-4"><h3>Weekly working hours</h3><form method="post">
+<input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><input type="hidden" name="doctor" value="{{ selected.id }}"><input type="hidden" name="action" value="schedule">
+<fieldset><legend>Working days</legend>{% for day in ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'] %}<label class="me-3"><input type="checkbox" name="weekdays" value="{{ loop.index0 }}"> {{ day }}</label>{% endfor %}</fieldset>
+<p>Selected days are updated. Other days keep their existing hours; use Remove day below to close them.</p>
+<label for="start">Start</label><input class="form-control" type="time" name="start" id="start" required>
+<label for="end">End</label><input class="form-control" type="time" name="end" id="end" required>
+<label for="minutes">Appointment duration</label><select class="form-select" name="minutes" id="minutes">{% for n in [15,20,30,45,60] %}<option value="{{ n }}" {% if n==30 %}selected{% endif %}>{{ n }} minutes</option>{% endfor %}</select>
+<button class="btn btn-primary mt-3">Save selected working days</button></form></div>
+<div class="table-responsive table-wrap"><table class="table"><tr><th>Day</th><th>Hours</th><th>Duration</th><th>Action</th></tr>{% for s in schedules %}<tr><td>{{ ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'][s.weekday] }}</td><td>{{ s.start_time.strftime('%H:%M') }}–{{ s.end_time.strftime('%H:%M') }}</td><td>{{ s.slot_minutes }} minutes</td><td><form method="post"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><input type="hidden" name="doctor" value="{{ selected.id }}"><input type="hidden" name="weekday" value="{{ s.weekday }}"><button name="action" value="remove_day" class="btn btn-outline-danger">Remove day</button></form></td></tr>{% else %}<tr><td colspan="4">No working hours published. Patients cannot book until hours are saved.</td></tr>{% endfor %}</table></div>
+<div class="card p-4 mb-4"><h3>Leave / emergency / unavailable</h3><p>For a full day, use 00:00 through 00:00 on the following day. You can also block just part of a day or multiple days.</p><form method="post"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><input type="hidden" name="doctor" value="{{ selected.id }}"><input type="hidden" name="action" value="unavailable">
+<label for="starts_at">From</label><input class="form-control" type="datetime-local" id="starts_at" name="starts_at" required>
+<label for="ends_at">Until</label><input class="form-control" type="datetime-local" id="ends_at" name="ends_at" required>
+<label for="reason">Reason (staff only)</label><input class="form-control" id="reason" name="reason" maxlength="200" placeholder="Leave, emergency or other unavailability"><button class="btn btn-warning mt-3">Mark not available</button></form></div>
+<div class="table-responsive table-wrap"><table class="table"><tr><th>From</th><th>Until</th><th>Private reason</th><th>Action</th></tr>{% for p in periods %}<tr><td>{{ p.starts_at }}</td><td>{{ p.ends_at }}</td><td>{{ p.reason }}</td><td><form method="post"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><input type="hidden" name="doctor" value="{{ selected.id }}"><input type="hidden" name="period" value="{{ p.id }}"><button class="btn btn-outline-secondary" name="action" value="remove_unavailable">Remove block</button></form></td></tr>{% else %}<tr><td colspan="4">No upcoming unavailable periods.</td></tr>{% endfor %}</table></div>
+<h3>Bookings needing attention</h3><p>Schedule changes do not automatically cancel appointments. Contact these patients to agree a new time.</p>
+<div class="table-responsive table-wrap"><table class="table"><tr><th>Booking</th><th>Patient</th><th>Visit</th><th>Status</th></tr>{% for ap in affected %}<tr><td>#{{ ap.id }}</td><td>{{ ap.patient.full_name }}</td><td>{{ ap.appointment_date }} {{ ap.appointment_time }}</td><td>Doctor not available — contact patient</td></tr>{% else %}<tr><td colspan="4">No conflicting future bookings.</td></tr>{% endfor %}</table></div>
+{% else %}<p>Add a doctor profile first.</p>{% endif %}
+{% endblock %}

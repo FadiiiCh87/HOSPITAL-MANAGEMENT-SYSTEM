@@ -29,6 +29,8 @@ class Appointment(db.Model):
         nullable=False
     )
 
+    duration_minutes = db.Column(db.Integer, nullable=False, default=30, server_default='30')
+
     reason = db.Column(
         db.Text
     )

@@ -24,6 +24,7 @@
     <ul class="nav flex-column">
 {% if current_user.role == "Admin" %}<li><a class="nav-link text-white" href="{{ url_for('portal.admin_portal') }}">V2 schedules & access</a></li>{% if clinical_access() %}<li><a class="nav-link text-white" href="{{ url_for('portal.doctor_dashboard') }}">Consultations</a></li>{% endif %}{% endif %}
 
+{% if current_user.role == "Admin" %}<li><a class="nav-link text-white" href="{{ url_for('portal.manage_availability') }}">Doctor hours & leave</a></li>{% endif %}
         <!-- Dashboard -->
 
         <li class="nav-item mb-1">

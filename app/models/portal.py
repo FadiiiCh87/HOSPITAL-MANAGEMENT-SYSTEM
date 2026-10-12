@@ -63,3 +63,14 @@ class LoginAttempt(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     key = db.Column(db.String(64), nullable=False, index=True)
     created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc).replace(tzinfo=None), nullable=False)
+
+
+class DoctorUnavailability(db.Model):
+    __tablename__ = 'doctor_unavailability'
+    id = db.Column(db.Integer, primary_key=True)
+    doctor_id = db.Column(db.Integer, db.ForeignKey('doctors.id'), nullable=False, index=True)
+    starts_at = db.Column(db.DateTime, nullable=False)
+    ends_at = db.Column(db.DateTime, nullable=False)
+    reason = db.Column(db.String(200), nullable=False, default='Unavailable')
+    doctor = db.relationship('Doctor')
+    __table_args__ = (db.CheckConstraint('ends_at > starts_at', name='valid_unavailability_interval'),)
