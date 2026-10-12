@@ -82,6 +82,77 @@ class PortalTests(unittest.TestCase):
             db.session.add(Appointment(patient_id=2,doctor_id=1,appointment_date=self.day,appointment_time=time(9),status='Pending'))
             with self.assertRaises(IntegrityError):db.session.commit()
             db.session.rollback()
+
+    def login_reception(self):
+        with self.app.app_context():
+            db.session.add(Admin(full_name='Reception', email='reception@clinic.test', password=generate_password_hash('test-password-123'), role='Receptionist'))
+            db.session.commit()
+        self.client.post('/patient/logout')
+        return self.client.post('/staff/login', data={'email':'reception@clinic.test','password':'test-password-123'})
+
+    def test_online_request_reception_confirms_patient_sees_instructions(self):
+        self.login()
+        page = self.client.post('/book', data={'doctor':1,'date':str(self.day),'time':'09:30','status':'Confirmed'}, follow_redirects=True)
+        self.assertIn(b'Awaiting confirmation', page.data)
+        with self.app.app_context():
+            self.assertEqual(db.session.get(Appointment,3).status,'Pending')
+        self.assertNotIn(b'15 minutes', page.data.split(b'Awaiting reception confirmation')[1].split(b'</td>')[0])
+        self.login_reception()
+        page=self.client.get('/appointments?status=Pending')
+        self.assertIn(b'Confirm</button>',page.data);self.assertIn(b'Reject</button>',page.data)
+        self.assertEqual(self.client.post('/appointments/3/review',data={'decision':'Confirmed'}).status_code,302)
+        self.assertEqual(self.client.post('/appointments/3/review',data={'decision':'Rejected'}).status_code,409)
+        self.client.get('/logout');self.login()
+        page=self.client.get('/patient/dashboard')
+        self.assertIn(b'collect your booking receipt from reception',page.data)
+        self.assertIn(b'arrive 15 minutes before your appointment',page.data)
+        self.assertEqual(self.client.get('/patient/appointments/status').json['3'],'Confirmed')
+
+    def test_rejected_request_releases_slot_and_preserves_history(self):
+        self.login()
+        data={'doctor':1,'date':str(self.day),'time':'09:30'}
+        self.client.post('/book',data=data)
+        self.login_reception()
+        self.assertEqual(self.client.post('/appointments/3/review',data={'decision':'Rejected'}).status_code,302)
+        self.client.get('/logout');self.login()
+        self.assertIn(b'Reception rejected this booking request',self.client.get('/patient/dashboard').data)
+        self.client.post('/book',data=data)
+        with self.app.app_context():
+            self.assertEqual(db.session.get(Appointment,3).status,'Rejected')
+            self.assertEqual(db.session.get(Appointment,4).status,'Pending')
+
+    def test_review_requires_staff_csrf_and_valid_pending_request(self):
+        self.login()
+        self.client.post('/book',data={'doctor':1,'date':str(self.day),'time':'09:30'})
+        self.assertEqual(self.client.post('/appointments/3/review',data={'decision':'Confirmed'}).status_code,403)
+        self.client.post('/patient/logout');self.login('doctor')
+        self.assertEqual(self.client.post('/appointments/3/review',data={'decision':'Confirmed'}).status_code,403)
+        self.client.get('/logout');self.login_reception()
+        self.assertIn(self.client.get('/appointments/3/review').status_code,(403,405))
+        self.assertEqual(self.client.post('/appointments/3/review',data={'decision':'Completed'}).status_code,400)
+        self.app.config['WTF_CSRF_ENABLED']=True
+        self.assertEqual(self.client.post('/appointments/3/review',data={'decision':'Confirmed'}).status_code,400)
+
+    def test_reception_cannot_confirm_unavailable_request(self):
+        self.login()
+        self.client.post('/book',data={'doctor':1,'date':str(self.day),'time':'09:30'})
+        with self.app.app_context():
+            db.session.add(DoctorUnavailability(doctor_id=1,starts_at=datetime.combine(self.day,time(9,30)),ends_at=datetime.combine(self.day,time(10)),reason='Private leave'))
+            db.session.commit()
+        self.login_reception()
+        page=self.client.post('/appointments/3/review',data={'decision':'Confirmed'},follow_redirects=True)
+        self.assertIn(b'no longer available',page.data)
+        with self.app.app_context():self.assertEqual(db.session.get(Appointment,3).status,'Pending')
+
+    def test_reschedule_requires_new_approval_and_status_endpoint_is_private(self):
+        self.login()
+        self.assertEqual(self.client.post('/patient/appointments/1/reschedule',data={'date':str(self.day),'time':'10:00'}).status_code,302)
+        with self.app.app_context():self.assertEqual(db.session.get(Appointment,1).status,'Pending')
+        statuses=self.client.get('/patient/appointments/status')
+        self.assertEqual(statuses.json,{'1':'Pending'})
+        self.assertIn('no-store',statuses.headers['Cache-Control'])
+        self.client.post('/patient/logout');self.login('bob')
+        self.assertEqual(self.client.get('/patient/appointments/status').json,{'2':'Confirmed'})
     def test_draft_report_publish_pdf_and_withdraw(self):
         self.login();self.assertNotIn(b'DRAFT-SECRET',self.client.get('/patient/dashboard').data)
         self.assertEqual(self.client.get('/patient/reports/1.pdf').status_code,404)

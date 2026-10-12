@@ -7,7 +7,10 @@ from flask import (
     flash
 )
 
-from flask_login import login_required
+from flask_login import login_required, current_user
+from flask import abort
+from app.extensions import db
+from app.models.appointment import Appointment
 
 from app.services.appointment_service import (
     get_appointments,
@@ -22,6 +25,33 @@ from app.services.appointment_service import (
 from flask import request, redirect, url_for, flash
 
 appointment_bp = Blueprint("appointment", __name__)
+
+
+@appointment_bp.post("/appointments/<int:id>/review")
+@login_required
+def review_request(id):
+    if current_user.role not in {"Admin", "Receptionist"}:
+        abort(403)
+    decision = request.form.get("decision")
+    if decision not in {"Confirmed", "Rejected"}:
+        abort(400)
+    from app.portal import lock_doctor, available, audit
+    appointment = db.get_or_404(Appointment, id)
+    lock_doctor(appointment.doctor_id)
+    appointment = Appointment.query.filter_by(id=id).populate_existing().with_for_update().first_or_404()
+    if appointment.status != "Pending":
+        abort(409, description="This request has already been reviewed or cancelled. Refresh the list.")
+    if decision == "Confirmed" and appointment.appointment_time.strftime("%H:%M") not in available(appointment.doctor_id, appointment.appointment_date, appointment.id):
+        flash("This slot is no longer available. Contact the patient to select another time or reject the request.", "warning")
+        return redirect(url_for("appointment.appointments", status="Pending"))
+    if decision == "Confirmed":
+        from app.models.portal import DoctorSchedule
+        appointment.duration_minutes = DoctorSchedule.query.filter_by(doctor_id=appointment.doctor_id, weekday=appointment.appointment_date.weekday()).one().slot_minutes
+    appointment.status = decision
+    audit("appointment_" + decision.lower(), id)
+    db.session.commit()
+    flash(f"Appointment #{id} {decision.lower()}. The patient can see the update in their dashboard.", "success")
+    return redirect(url_for("appointment.appointments", status="Pending"))
 
 
 # ======================================================

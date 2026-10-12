@@ -76,7 +76,7 @@ def slot_states(did, day, exclude=None):
     schedule = DoctorSchedule.query.filter_by(doctor_id=did, weekday=day.weekday()).first()
     if not schedule or day < clock.date() or day > clock.date()+timedelta(days=90): return []
     if schedule.slot_minutes <= 0: return []
-    appointments = Appointment.query.filter(Appointment.doctor_id==did, Appointment.appointment_date==day, Appointment.status!='Cancelled')
+    appointments = Appointment.query.filter(Appointment.doctor_id==did, Appointment.appointment_date==day, Appointment.status.notin_(['Cancelled', 'Rejected']))
     if exclude: appointments = appointments.filter(Appointment.id!=exclude)
     booked = [(datetime.combine(day,x.appointment_time), datetime.combine(day,x.appointment_time)+timedelta(minutes=x.duration_minutes or 30)) for x in appointments]
     periods = DoctorUnavailability.query.filter(DoctorUnavailability.doctor_id==did, DoctorUnavailability.starts_at < datetime.combine(day+timedelta(days=1),time.min), DoctorUnavailability.ends_at > datetime.combine(day,time.min)).all()
@@ -209,11 +209,17 @@ def book():
         slot=request.form.get('time','')
         if slot not in slots:flash('That slot is unavailable. Choose another.','warning')
         else:
-            ap=Appointment(duration_minutes=DoctorSchedule.query.filter_by(doctor_id=did,weekday=day.weekday()).first().slot_minutes,patient_id=current_user.patient_id,doctor_id=did,appointment_date=day,appointment_time=time.fromisoformat(slot),reason=request.form.get('reason','')[:2000],status='Confirmed')
+            ap=Appointment(duration_minutes=DoctorSchedule.query.filter_by(doctor_id=did,weekday=day.weekday()).first().slot_minutes,patient_id=current_user.patient_id,doctor_id=did,appointment_date=day,appointment_time=time.fromisoformat(slot),reason=request.form.get('reason','')[:2000],status='Pending')
             try:
-                db.session.add(ap);db.session.flush();audit('appointment_booked',ap.id);db.session.commit();session.pop('pending_booking',None);flash(f'Appointment #{ap.id} confirmed.','success');return redirect(url_for('portal.patient_dashboard'))
+                db.session.add(ap);db.session.flush();audit('appointment_requested',ap.id);db.session.commit();session.pop('pending_booking',None);flash(f'Appointment request #{ap.id} sent to reception. Awaiting confirmation.','success');return redirect(url_for('portal.patient_dashboard'))
             except IntegrityError:db.session.rollback();flash('Another booking just reserved that slot. Choose a new slot.','warning')
     return render_template('portal/book.html',doctors=Doctor.query.order_by(Doctor.full_name).all(),doctor=doctor,day=day,slots=slots,slot_states=slot_states(did,day) if doctor else [],availability_message=availability_message(did,day) if doctor else '',minimum=now().date(),maximum=now().date()+timedelta(days=90),pending=session.get('pending_booking',{}))
+
+@portal.get('/patient/appointments/status')
+@require_role('Patient')
+def appointment_status():
+    rows = Appointment.query.filter_by(patient_id=current_user.patient_id).all()
+    return jsonify({str(row.id): row.status for row in rows})
 
 @portal.get('/patient/dashboard')
 @require_role('Patient')
@@ -250,10 +256,10 @@ def reschedule(id):
     slots=available(ap.doctor_id,day,ap.id)
     if request.method=='POST':
         if request.form.get('time') not in slots:abort(409)
-        ap.appointment_date=day;ap.appointment_time=time.fromisoformat(request.form['time']);ap.duration_minutes=DoctorSchedule.query.filter_by(doctor_id=ap.doctor_id,weekday=day.weekday()).first().slot_minutes;ap.status='Confirmed'
+        ap.appointment_date=day;ap.appointment_time=time.fromisoformat(request.form['time']);ap.duration_minutes=DoctorSchedule.query.filter_by(doctor_id=ap.doctor_id,weekday=day.weekday()).first().slot_minutes;ap.status='Pending'
         try:audit('appointment_rescheduled',id);db.session.commit()
         except IntegrityError:db.session.rollback();abort(409)
-        flash('Appointment rescheduled.','success');return redirect(url_for('portal.patient_dashboard'))
+        flash('New appointment time sent to reception. Awaiting confirmation.','success');return redirect(url_for('portal.patient_dashboard'))
     return render_template('portal/book.html',doctors=[ap.doctor],doctor=ap.doctor,day=day,slots=slots,slot_states=slot_states(ap.doctor_id,day,ap.id),availability_message=availability_message(ap.doctor_id,day),reschedule=ap,minimum=now().date(),maximum=now().date()+timedelta(days=90),pending=session.get('pending_booking',{}))
 
 def pdf_document(title,lines,filename):

@@ -28,7 +28,12 @@ with app.app_context():
     from app.models.appointment import Appointment
     for index in Appointment.__table__.indexes:
         if index.name == "uq_active_doctor_slot":
-            index.create(bind=db.engine, checkfirst=True)
+            saved = next((item for item in inspect(db.engine).get_indexes('appointments') if item['name'] == index.name), None)
+            # Rejected requests release the slot. Replace the old predicate atomically.
+            with db.engine.begin() as connection:
+                if saved and 'Rejected' not in str(saved.get('dialect_options', {})):
+                    index.drop(bind=connection, checkfirst=True)
+                index.create(bind=connection, checkfirst=True)
 
     admin_email = os.getenv("ADMIN_EMAIL", "admin@hospital.com").strip().lower()
     admin_password = os.getenv("ADMIN_PASSWORD")

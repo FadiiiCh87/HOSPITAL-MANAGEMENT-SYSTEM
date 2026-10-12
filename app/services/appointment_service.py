@@ -140,7 +140,7 @@ def create_appointment(form):
         Appointment.doctor_id==doctor_id,
         Appointment.appointment_date==appointment_date,
         Appointment.appointment_time==appointment_time,
-        Appointment.status!="Cancelled"
+        Appointment.status.notin_(["Cancelled", "Rejected"])
     ).first()
 
     if existing:
@@ -193,9 +193,18 @@ def update_appointment(appointment, form):
 
     appointment.reason = form["reason"]
 
-    if form["status"] not in {"Pending","Confirmed","Completed","Cancelled"}:
+    if form["status"] not in {"Pending","Confirmed","Completed","Cancelled","Rejected"}:
         from flask import abort
         abort(400)
+    if form["status"] == "Confirmed":
+        from flask import abort
+        from app.portal import available, lock_doctor
+        from app.models.portal import DoctorSchedule
+        lock_doctor(appointment.doctor_id)
+        with db.session.no_autoflush:
+            if appointment.appointment_time.strftime("%H:%M") not in available(appointment.doctor_id, appointment.appointment_date, appointment.id):
+                abort(409, description="This slot is unavailable. Select another time before confirming.")
+            appointment.duration_minutes = DoctorSchedule.query.filter_by(doctor_id=appointment.doctor_id, weekday=appointment.appointment_date.weekday()).one().slot_minutes
     appointment.status = form["status"]
 
     db.session.commit()

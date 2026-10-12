@@ -140,6 +140,7 @@
     name="status"
     class="form-select">
 
+        <option value="Rejected" {% if appointment.status=="Rejected" %}selected{% endif %}>Rejected</option>
         <option value="Confirmed" {% if appointment.status=="Confirmed" %}selected{% endif %}>Confirmed</option>
         <option
         value="Pending"

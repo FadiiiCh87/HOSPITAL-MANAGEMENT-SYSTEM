@@ -51,4 +51,4 @@ class Appointment(db.Model):
     )
 
 from sqlalchemy import Index, text
-Index("uq_active_doctor_slot", Appointment.doctor_id, Appointment.appointment_date, Appointment.appointment_time, unique=True, postgresql_where=text("status != 'Cancelled'"), sqlite_where=text("status != 'Cancelled'"))
+Index("uq_active_doctor_slot", Appointment.doctor_id, Appointment.appointment_date, Appointment.appointment_time, unique=True, postgresql_where=text("status NOT IN ('Cancelled', 'Rejected')"), sqlite_where=text("status NOT IN ('Cancelled', 'Rejected')"))
