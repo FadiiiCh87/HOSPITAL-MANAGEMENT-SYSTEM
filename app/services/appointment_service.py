@@ -104,7 +104,7 @@ def create_appointment(form):
     # Past Date Validation
     # ---------------------------------------
 
-    if appointment_date < date.today():
+    if appointment_date < __import__("app.portal", fromlist=["now"]).now().date():
 
         return (
             False,
@@ -115,10 +115,11 @@ def create_appointment(form):
 # Past Time Validation
 # ---------------------------------------
 
-    current_datetime = datetime.now()
+    from app.portal import now
+    current_datetime = now()
 
     if (
-        appointment_date == date.today()
+        appointment_date == current_datetime.date()
         and appointment_time < current_datetime.time()
     ):
 
@@ -135,10 +136,11 @@ def create_appointment(form):
     # Check Doctor Double Booking
     # ---------------------------------------
 
-    existing = Appointment.query.filter_by(
-        doctor_id=doctor_id,
-        appointment_date=appointment_date,
-        appointment_time=appointment_time
+    existing = Appointment.query.filter(
+        Appointment.doctor_id==doctor_id,
+        Appointment.appointment_date==appointment_date,
+        Appointment.appointment_time==appointment_time,
+        Appointment.status!="Cancelled"
     ).first()
 
     if existing:
@@ -191,6 +193,9 @@ def update_appointment(appointment, form):
 
     appointment.reason = form["reason"]
 
+    if form["status"] not in {"Pending","Confirmed","Completed","Cancelled"}:
+        from flask import abort
+        abort(400)
     appointment.status = form["status"]
 
     db.session.commit()
