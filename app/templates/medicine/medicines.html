@@ -255,6 +255,7 @@ Expired
 </div>
 
 <form method="GET">
+<input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
 
 <div class="row g-3 mb-4">
 
@@ -691,6 +692,7 @@ class="btn btn-warning btn-sm">
 action="{{ url_for('medicine.delete_medicine', id=medicine.id) }}"
 method="POST"
 style="display:inline;">
+<input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
 
 <button
 type="submit"
