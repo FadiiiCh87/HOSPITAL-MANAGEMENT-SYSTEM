@@ -15,8 +15,9 @@ with app.app_context():
     if schema:
         if not re.fullmatch(r"[a-z_][a-z0-9_]*", schema):
             raise RuntimeError("DB_SCHEMA contains unsupported characters")
-        db.session.execute(text(f'CREATE SCHEMA IF NOT EXISTS "{schema}"'))
-        db.session.commit()
+        if os.getenv("CREATE_DB_SCHEMA", "false").lower() in {"1", "true", "yes"}:
+            db.session.execute(text(f'CREATE SCHEMA IF NOT EXISTS "{schema}"'))
+            db.session.commit()
 
     db.create_all()
 
