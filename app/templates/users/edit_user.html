@@ -95,6 +95,7 @@
                         name="role"
                         class="form-select">
 
+                        {% if user.role == "Doctor" %}<option value="Doctor" selected>Doctor (linked account)</option>{% endif %}
                         <option value="Admin"
                             {% if user.role=="Admin" %}selected{% endif %}>
                             Admin
