@@ -1110,32 +1110,27 @@ Revenue Chart
 
 }
 
-/* Mobile */
-
-@media(max-width:992px){
-
-.sidebar{
-
-    position:relative;
-
-    width:100%;
-
-    height:auto;
-
+/* Mobile staff navigation: drawer stays outside the dashboard flow. */
+@media (max-width: 991.98px) {
+    .sidebar.offcanvas-lg {
+        position: fixed;
+        inset: 0 auto 0 0;
+        width: min(290px, 85vw);
+        height: 100vh !important;
+        height: 100dvh !important;
+        max-width: 85vw;
+        z-index: 1045;
+        overflow-y: auto;
+    }
+    .main-content { margin-left: 0; min-width: 0; }
+    .navbar { margin-left: 0; }
+    .staff-brand { flex: 1; min-width: 0; margin-right: 0; white-space: normal; font-size: 1rem; }
+    .staff-user { width: 100%; padding-left: 3.5rem; font-size: .85rem; overflow-wrap: anywhere; }
+    .offcanvas-backdrop { z-index: 1040; }
+    .dashboard-nav { z-index: 100; }
 }
-
-.main-content{
-
-    margin-left:0;
-
-}
-
-.navbar{
-
-    margin-left:0;
-
-}
-
+@media (prefers-reduced-motion: reduce) {
+    .sidebar.offcanvas-lg { transition: none; }
 }
 
 /* ==========================================
