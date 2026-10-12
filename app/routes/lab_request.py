@@ -72,6 +72,11 @@ def lab_result(id):
         request_data.result = request.form["result"]
 
         request_data.status = request.form["status"]
+        from app.models.portal import PublishedReport
+        publication = PublishedReport.query.filter_by(lab_request_id=id).first()
+        if publication:
+            publication.published_at = None
+            publication.file_data = None
 
         db.session.commit()
 
