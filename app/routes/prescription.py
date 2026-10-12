@@ -17,7 +17,7 @@ from flask import (
     flash
 )
 
-from flask_login import login_required
+from flask_login import login_required, current_user
 
 
 prescription_bp = Blueprint(
@@ -38,7 +38,7 @@ def prescriptions():
 
     
     return render_template(
-        "prescriptions/prescriptions.html",
+        "prescriptions/pharmacy.html" if current_user.role == "Pharmacist" else "prescriptions/prescriptions.html",
         prescriptions=prescriptions,
         search=search
     )
@@ -122,7 +122,7 @@ def view_prescription(id):
     prescription = get_prescription(id)
 
     return render_template(
-        "prescriptions/view_prescription.html",
+        "prescriptions/pharmacy.html" if current_user.role == "Pharmacist" else "prescriptions/view_prescription.html",
         prescription=prescription
     )
 
@@ -132,7 +132,7 @@ def print_prescription(id):
 
     prescription = get_prescription(id)
     return render_template(
-        "prescriptions/print_prescription.html",
+        "prescriptions/pharmacy.html" if current_user.role == "Pharmacist" else "prescriptions/print_prescription.html",
         prescription=prescription
     )
 

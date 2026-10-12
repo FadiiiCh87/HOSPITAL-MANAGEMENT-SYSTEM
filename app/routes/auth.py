@@ -47,6 +47,8 @@ def login():
 @login_required
 def dashboard():
 
+    if current_user.role != "Admin":
+        return render_template("role_dashboard.html")
     dashboard_data = get_dashboard_data()
 
     

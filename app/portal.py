@@ -20,6 +20,7 @@ from app.models.department import Department
 from app.models.appointment import Appointment
 from app.models.prescription import Prescription
 from app.models.lab_request import LabRequest
+from app.models.laboratory import Laboratory
 from app.models.admin import Admin
 
 portal = Blueprint('portal', __name__)
@@ -41,7 +42,8 @@ def require_role(*roles):
 
 def doctor_id():
     link = DoctorAccount.query.filter_by(admin_id=current_user.id).first()
-    return link.doctor_id if link else None
+    if not link: abort(403)
+    return link.doctor_id
 
 def own_appointment(id):
     ap = Appointment.query.filter_by(id=id).with_for_update().first_or_404() if request.method == "POST" else db.get_or_404(Appointment, id)
@@ -275,7 +277,7 @@ def consultation(id):
         db.session.flush();checkup.prescription_id=rx.id
         ap.status='Completed';audit('checkup_saved',id);db.session.commit();flash('Checkup and prescription saved.','success');return redirect(url_for('portal.doctor_dashboard'))
     audit('doctor_patient_history_viewed',ap.patient_id);db.session.commit()
-    return render_template('portal/consultation.html',appointment=ap,checkup=checkup,prescriptions=Prescription.query.filter_by(patient_id=ap.patient_id).order_by(Prescription.prescription_date.desc()).all(),reports=PublishedReport.query.join(LabRequest).filter(LabRequest.patient_id==ap.patient_id,PublishedReport.published_at.isnot(None)).all())
+    return render_template('portal/consultation.html',appointment=ap,checkup=checkup,laboratory_tests=Laboratory.query.order_by(Laboratory.test_name).all(),prescriptions=Prescription.query.filter_by(patient_id=ap.patient_id).order_by(Prescription.prescription_date.desc()).all(),reports=PublishedReport.query.join(LabRequest).filter(LabRequest.patient_id==ap.patient_id,PublishedReport.published_at.isnot(None)).all())
 
 @portal.route('/admin/portal',methods=['GET','POST'])
 @require_role('Admin')
@@ -307,7 +309,7 @@ def admin_portal():
     return render_template('portal/admin.html',doctors=Doctor.query.order_by(Doctor.full_name).all(),schedules=DoctorSchedule.query.all(),accounts=PatientAccount.query.all(),patients=Patient.query.all(),events=AuditEvent.query.order_by(AuditEvent.id.desc()).limit(100).all())
 
 @portal.route('/admin/reports/<int:id>/publish',methods=['GET','POST'])
-@require_role('Admin')
+@require_role('Admin','Lab Staff')
 def publish_report(id):
     lab=db.get_or_404(LabRequest,id);r=PublishedReport.query.filter_by(lab_request_id=id).first()
     if request.method=='POST':
@@ -323,3 +325,18 @@ def publish_report(id):
         else:r.published_at=None;audit('report_unpublished',id)
         db.session.commit();flash('Report publication updated.','success')
     return render_template('portal/publish.html',lab=lab,report=r)
+
+
+@portal.post('/doctor/appointments/<int:id>/request-test')
+@require_role('Doctor')
+def request_test(id):
+    ap = own_appointment(id)
+    if ap.status == 'Cancelled': abort(400)
+    test = db.get_or_404(Laboratory, request.form.get('laboratory_id', type=int))
+    lab = LabRequest(patient_id=ap.patient_id, doctor_id=ap.doctor_id, laboratory_id=test.id, request_date=now().date(), status='Pending')
+    db.session.add(lab)
+    db.session.flush()
+    audit('test_requested', lab.id)
+    db.session.commit()
+    flash('Laboratory test requested.', 'success')
+    return redirect(url_for('portal.consultation', id=ap.id))

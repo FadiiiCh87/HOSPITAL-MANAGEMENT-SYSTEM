@@ -20,6 +20,7 @@ class HospitalSmokeTests(unittest.TestCase):
         self.app = create_app(
             {
                 "TESTING": True,
+                "CLINICAL_ADMIN_IDS": "1",
                 "SECRET_KEY": "test-secret",
                 "SQLALCHEMY_DATABASE_URI": f"sqlite:///{self.database_file.name}",
                 "SQLALCHEMY_ENGINE_OPTIONS": {},

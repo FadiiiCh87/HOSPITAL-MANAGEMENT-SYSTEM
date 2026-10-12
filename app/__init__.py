@@ -59,8 +59,16 @@ def create_app(test_config=None):
     CSRFProtect(app)
     app.register_blueprint(portal)
 
+    def clinical_access():
+        permitted = str(app.config.get("CLINICAL_ADMIN_IDS", os.getenv("CLINICAL_ADMIN_IDS", ""))).split(",")
+        return current_user.is_authenticated and (current_user.role in {"Doctor", "Lab Staff"} or (current_user.role == "Admin" and str(current_user.id) in permitted))
+
+    app.jinja_env.globals["clinical_access"] = clinical_access
+
     @app.before_request
     def enforce_access():
+        if current_user.is_authenticated and current_user.role == "Admin" and (request.blueprint in {"prescription", "lab_request"} or request.endpoint in {"portal.doctor_dashboard", "portal.consultation", "portal.publish_report"}) and not clinical_access():
+            abort(403)
         if request.endpoint == "auth.login":
             return
         if request.endpoint and request.endpoint.startswith(("portal.", "static")) or request.endpoint == "health":
@@ -70,11 +78,19 @@ def create_app(test_config=None):
                 abort(403)
             if current_user.role == "Doctor" and request.endpoint not in {"auth.login", "auth.logout"}:
                 abort(403)
-            if current_user.role == "Receptionist" and request.blueprint not in {"auth","patient","appointment","billing","lab_request"}:
+            if current_user.role == "Receptionist" and request.blueprint not in {"auth","patient","appointment"}:
                 abort(403)
-            if current_user.role == "Pharmacist" and request.blueprint not in {"auth","medicine","category","laboratory"}:
+            if current_user.role == "Pharmacist" and request.blueprint not in {"auth","medicine","category","prescription"}:
                 abort(403)
-            if current_user.role not in {"Admin","Doctor","Receptionist","Pharmacist"}:
+            if current_user.role == "Pharmacist" and request.blueprint == "prescription" and (request.method != "GET" or request.endpoint not in {"prescription.prescriptions", "prescription.view_prescription", "prescription.print_prescription"}):
+                abort(403)
+            if current_user.role == "Lab Staff" and request.blueprint not in {"auth", "laboratory", "lab_request"}:
+                abort(403)
+            if current_user.role == "Cashier" and request.blueprint not in {"auth", "billing", "report"}:
+                abort(403)
+            if current_user.role == "Cashier" and request.blueprint == "report" and request.endpoint != "report.revenue_report":
+                abort(403)
+            if current_user.role not in {"Admin","Doctor","Receptionist","Pharmacist","Lab Staff","Cashier"}:
                 abort(403)
             if request.blueprint not in {"auth"}:
                 from app.portal import audit

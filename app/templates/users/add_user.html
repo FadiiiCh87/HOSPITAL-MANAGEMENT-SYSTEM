@@ -106,7 +106,10 @@
 
                         </option>
 
-                    </select>
+                    <option value="Doctor">Doctor</option><option value="Lab Staff">Lab Staff</option><option value="Cashier">Cashier</option></select>
+<label class="form-label mt-3" for="doctor_id">Linked doctor (required for Doctor role)</label>
+<select class="form-select" name="doctor_id" id="doctor_id"><option value="">Select doctor</option>
+{% for doctor in doctors %}<option value="{{ doctor.id }}" {% if doctor_link is defined and doctor_link and doctor_link.doctor_id == doctor.id %}selected{% endif %}>{{ doctor.full_name }}</option>{% endfor %}</select>
 
                 </div>
 

@@ -18,7 +18,7 @@ from app.portal import now
 class PortalTests(unittest.TestCase):
     def setUp(self):
         f=tempfile.NamedTemporaryFile(delete=False);self.path=f.name;f.close()
-        self.app=create_app({'TESTING':True,'SECRET_KEY':'test-secret','SQLALCHEMY_DATABASE_URI':'sqlite:///'+self.path,'SQLALCHEMY_ENGINE_OPTIONS':{},'WTF_CSRF_ENABLED':False,'SESSION_COOKIE_SECURE':False})
+        self.app=create_app({'TESTING':True,'CLINICAL_ADMIN_IDS':'1','SECRET_KEY':'test-secret','SQLALCHEMY_DATABASE_URI':'sqlite:///'+self.path,'SQLALCHEMY_ENGINE_OPTIONS':{},'WTF_CSRF_ENABLED':False,'SESSION_COOKIE_SECURE':False})
         self.client=self.app.test_client();self.day=now().date()+timedelta(days=3)
         with self.app.app_context():
             db.create_all()
@@ -123,4 +123,45 @@ class PortalTests(unittest.TestCase):
         self.client.post('/patient/logout');r=self.client.post('/patient/register',data={'name':'Fake','email':'alice@test.com','password':'test-password-123'},follow_redirects=True)
         self.assertIn(b'already registered',r.data)
 
-if __name__=='__main__':unittest.main()
+
+    def test_user_admin_creates_linked_doctor_and_blocks_duplicate(self):
+        self.login('admin')
+        data={'full_name':'Dr Two','email':'newdoctor@clinic.test','password':'test-password-123','role':'Doctor','doctor_id':'2'}
+        self.assertEqual(self.client.post('/users/add',data=data).status_code,302)
+        with self.app.app_context():
+            account=Admin.query.filter_by(email=data['email']).one()
+            self.assertEqual(DoctorAccount.query.filter_by(admin_id=account.id).one().doctor_id,2)
+        data['email']='duplicate@clinic.test'
+        self.client.post('/users/add',data=data)
+        with self.app.app_context():self.assertIsNone(Admin.query.filter_by(email=data['email']).first())
+        self.client.get('/logout')
+        r=self.client.post('/staff/login',data={'email':'newdoctor@clinic.test','password':'test-password-123'},follow_redirects=True)
+        self.assertEqual(r.status_code,200)
+        self.assertEqual(self.client.get('/doctor/appointments/1').status_code,404)
+
+    def test_staff_role_boundaries_and_dashboard_privacy(self):
+        matrix={'Receptionist':('/appointments','/billing','/lab-requests','/prescriptions'), 'Pharmacist':('/medicines','/patients','/laboratory','/prescriptions/add'), 'Lab Staff':('/lab-requests','/patients','/prescriptions','/users'), 'Cashier':('/billing','/patients','/prescriptions','/users')}
+        for role,paths in matrix.items():
+            with self.app.app_context():
+                a=Admin(full_name=role,email=role.replace(' ','').lower()+'@test.com',password=generate_password_hash('test-password-123'),role=role);db.session.add(a);db.session.commit()
+            self.client.get('/logout')
+            r=self.client.post('/staff/login',data={'email':role.replace(' ','').lower()+'@test.com','password':'test-password-123'},follow_redirects=True)
+            self.assertEqual(r.status_code,200,role)
+            self.assertNotIn(b'PRIVATE-BOB',r.data)
+            self.assertEqual(self.client.get(paths[0]).status_code,200,(role,paths[0]))
+            for path in paths[1:]:self.assertEqual(self.client.get(path).status_code,403,(role,path))
+
+    def test_admin_needs_explicit_clinical_permission(self):
+        self.app.config['CLINICAL_ADMIN_IDS']=''
+        self.login('admin')
+        for path in ['/doctor/dashboard','/doctor/appointments/1','/prescriptions','/lab-requests','/admin/reports/1/publish']:
+            self.assertEqual(self.client.get(path).status_code,403,path)
+        self.assertEqual(self.client.get('/users').status_code,200)
+
+    def test_doctor_test_request_is_bound_to_assigned_appointment(self):
+        self.login('doctor')
+        self.assertEqual(self.client.post('/doctor/appointments/2/request-test',data={'laboratory_id':1}).status_code,404)
+        self.assertEqual(self.client.post('/doctor/appointments/1/request-test',data={'laboratory_id':1}).status_code,302)
+        with self.app.app_context():
+            lab=LabRequest.query.order_by(LabRequest.id.desc()).first()
+            self.assertEqual((lab.patient_id,lab.doctor_id,lab.status),(1,1,'Pending'))

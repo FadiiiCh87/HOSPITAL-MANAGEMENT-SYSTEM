@@ -11,6 +11,9 @@ from werkzeug.security import generate_password_hash
 from flask import render_template
 from app.models.admin import Admin
 from app.extensions import db
+from app.models.doctor import Doctor
+from app.models.portal import DoctorAccount
+from sqlalchemy.exc import IntegrityError
 from flask import Blueprint
 from flask_login import login_required, current_user
 
@@ -65,10 +68,10 @@ def add_user():
     if request.method == "POST":
 
         full_name = request.form["full_name"]
-        email = request.form["email"]
+        email = request.form["email"].strip().lower()
         password = request.form["password"]
         role = request.form["role"]
-        if role not in {"Admin", "Receptionist", "Pharmacist"}:
+        if role not in {"Admin", "Receptionist", "Pharmacist", "Doctor", "Lab Staff", "Cashier"}:
             flash("Create doctor access through V2 schedules & access.", "warning")
             return redirect(url_for("user.users"))
 
@@ -101,6 +104,9 @@ def add_user():
 
         db.session.add(user)
 
+        if not sync_doctor(user, role):
+            db.session.rollback()
+            return redirect(url_for("user.add_user"))
         db.session.commit()
 
         flash(
@@ -113,7 +119,7 @@ def add_user():
         )
 
     return render_template(
-        "users/add_user.html"
+        "users/add_user.html", doctors=Doctor.query.order_by(Doctor.full_name).all()
     )
 @user_bp.route("/users/edit/<int:id>", methods=["GET", "POST"])
 @login_required
@@ -125,8 +131,8 @@ def edit_user(id):
     if request.method == "POST":
 
         user.full_name = request.form["full_name"]
-        user.email = request.form["email"]
-        if request.form["role"] not in {"Admin", "Receptionist", "Pharmacist"} and not (user.role == "Doctor" and request.form["role"] == "Doctor"):
+        user.email = request.form["email"].strip().lower().strip().lower()
+        if request.form["role"] not in {"Admin", "Receptionist", "Pharmacist", "Doctor", "Lab Staff", "Cashier"}:
             flash("Doctor roles are managed through V2 linked accounts.", "warning")
             return redirect(url_for("user.users"))
         user.role = request.form["role"]
@@ -137,6 +143,9 @@ def edit_user(id):
 
             user.password = generate_password_hash(password)
 
+        if not sync_doctor(user, user.role):
+            db.session.rollback()
+            return redirect(url_for("user.edit_user", id=id))
         db.session.commit()
 
         flash(
@@ -150,7 +159,7 @@ def edit_user(id):
 
     return render_template(
         "users/edit_user.html",
-        user=user
+        user=user, doctors=Doctor.query.order_by(Doctor.full_name).all(), doctor_link=DoctorAccount.query.filter_by(admin_id=user.id).first()
     )
 @user_bp.route("/users/delete/<int:id>", methods=["POST"])
 @login_required
@@ -170,6 +179,7 @@ def delete_user(id):
             url_for("user.users")
         )
 
+    DoctorAccount.query.filter_by(admin_id=user.id).delete()
     db.session.delete(user)
 
     db.session.commit()
@@ -182,3 +192,20 @@ def delete_user(id):
     return redirect(
         url_for("user.users")
     )
+
+
+def sync_doctor(user, role):
+    link = DoctorAccount.query.filter_by(admin_id=user.id).first() if user.id else None
+    if role != "Doctor":
+        if link: db.session.delete(link)
+        return True
+    did = request.form.get("doctor_id", type=int)
+    doctor = db.session.get(Doctor, did) if did else None
+    other = DoctorAccount.query.filter_by(doctor_id=did).first() if did else None
+    if not doctor or (other and other.admin_id != user.id):
+        flash("Select a doctor without another linked staff account.", "danger")
+        return False
+    db.session.flush()
+    if link: link.doctor_id = did
+    else: db.session.add(DoctorAccount(admin_id=user.id, doctor_id=did))
+    return True

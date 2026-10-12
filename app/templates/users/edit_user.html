@@ -95,7 +95,7 @@
                         name="role"
                         class="form-select">
 
-                        {% if user.role == "Doctor" %}<option value="Doctor" selected>Doctor (linked account)</option>{% endif %}
+                        
                         <option value="Admin"
                             {% if user.role=="Admin" %}selected{% endif %}>
                             Admin
@@ -111,7 +111,10 @@
                             Pharmacist
                         </option>
 
-                    </select>
+                    <option value="Doctor" {% if user.role == "Doctor" %}selected{% endif %}>Doctor</option><option value="Lab Staff" {% if user.role == "Lab Staff" %}selected{% endif %}>Lab Staff</option><option value="Cashier" {% if user.role == "Cashier" %}selected{% endif %}>Cashier</option></select>
+<label class="form-label mt-3" for="doctor_id">Linked doctor (required for Doctor role)</label>
+<select class="form-select" name="doctor_id" id="doctor_id"><option value="">Select doctor</option>
+{% for doctor in doctors %}<option value="{{ doctor.id }}" {% if doctor_link is defined and doctor_link and doctor_link.doctor_id == doctor.id %}selected{% endif %}>{{ doctor.full_name }}</option>{% endfor %}</select>
 
                 </div>
 

@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 
 {% block content %}
-{% if current_user.role == "Admin" %}<a class="btn btn-primary mb-3" href="{{ url_for('portal.publish_report',id=request_data.id) }}">Publish report / upload PDF</a>{% endif %}
+{% if current_user.role in ["Admin", "Lab Staff"] %}<a class="btn btn-primary mb-3" href="{{ url_for('portal.publish_report',id=request_data.id) }}">Publish report / upload PDF</a>{% endif %}
 
 <div class="container-fluid">
 
