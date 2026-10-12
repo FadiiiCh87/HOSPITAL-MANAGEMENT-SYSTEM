@@ -142,7 +142,8 @@ def reset_request():
         else:
             if user:
                 token=URLSafeTimedSerializer(current_app.secret_key).dumps({'id':user.id,'version':user.token_version},salt='patient-reset')
-                link=request.url_root.rstrip('/')+url_for('portal.reset_password',token=token)
+                base_url=os.getenv('PUBLIC_BASE_URL') or os.getenv('RENDER_EXTERNAL_URL') or 'https://hospital-management-system-fahad.onrender.com'
+                link=base_url.rstrip('/')+url_for('portal.reset_password',token=token)
                 msg=EmailMessage();msg['Subject']='Reset your hospital portal password';msg['From']=os.environ['SMTP_FROM'];msg['To']=user.email;msg.set_content('This link expires in 30 minutes:\n'+link)
                 try:
                     with smtplib.SMTP(os.environ['SMTP_HOST'],int(os.getenv('SMTP_PORT','587')),timeout=10) as smtp:
