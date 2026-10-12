@@ -58,6 +58,20 @@
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+(() => {
+    const drawer = document.getElementById('staff-sidebar');
+    const toggle = document.querySelector('[aria-controls="staff-sidebar"]');
+    if (!drawer || !toggle || !window.bootstrap) return;
+    toggle.setAttribute('aria-expanded', 'false');
+    drawer.addEventListener('shown.bs.offcanvas', () => toggle.setAttribute('aria-expanded', 'true'));
+    drawer.addEventListener('hidden.bs.offcanvas', () => toggle.setAttribute('aria-expanded', 'false'));
+    // The desktop sidebar stays fixed, so explicitly release the mobile backdrop.
+    window.matchMedia('(min-width: 992px)').addEventListener('change', event => {
+        if (event.matches) bootstrap.Offcanvas.getInstance(drawer)?.hide();
+    });
+})();
+</script>
 </body>
 
 
