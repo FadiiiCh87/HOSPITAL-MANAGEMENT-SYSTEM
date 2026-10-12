@@ -44,7 +44,7 @@ def doctor_id():
     return link.doctor_id if link else None
 
 def own_appointment(id):
-    ap = db.get_or_404(Appointment, id)
+    ap = Appointment.query.filter_by(id=id).with_for_update().first_or_404() if request.method == "POST" else db.get_or_404(Appointment, id)
     if current_user.role == 'Patient' and ap.patient_id != current_user.patient_id: abort(404)
     if current_user.role == 'Doctor' and ap.doctor_id != doctor_id(): abort(404)
     return ap
