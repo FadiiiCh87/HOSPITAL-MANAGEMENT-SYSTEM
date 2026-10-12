@@ -1,19 +1,9 @@
-<nav class="navbar navbar-dark bg-primary">
-
-<div class="container-fluid">
-
-<span class="navbar-brand">
-
-🏥 Hospital Management System
-
-</span>
-
-<span class="text-white">
-
-{{ current_user.full_name }}
-
-</span>
-
+<nav class="navbar navbar-dark bg-primary staff-navbar">
+<div class="container-fluid gap-2">
+<button class="navbar-toggler d-lg-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#staff-sidebar" aria-controls="staff-sidebar" aria-label="Open navigation menu">
+<span class="navbar-toggler-icon"></span>
+</button>
+<span class="navbar-brand staff-brand mb-0">🏥 Hospital Management System</span>
+<span class="text-white staff-user">{{ current_user.full_name }}</span>
 </div>
-
 </nav>
