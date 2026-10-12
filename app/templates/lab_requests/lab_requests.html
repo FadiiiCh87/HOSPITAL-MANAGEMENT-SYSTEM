@@ -39,6 +39,7 @@
         <div class="card-body">
 
             <form method="GET">
+<input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
 
                 <div class="row">
 
@@ -198,6 +199,7 @@ class="btn btn-warning btn-sm">
 action="{{ url_for('lab_request.delete_lab_request', id=request.id) }}"
 method="POST"
 style="display:inline;">
+<input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
 
 <button
 type="submit"

@@ -21,6 +21,7 @@
     <hr class="text-secondary">
 
     <ul class="nav flex-column">
+{% if current_user.role == "Admin" %}<li><a class="nav-link text-white" href="{{ url_for('portal.admin_portal') }}">V2 schedules & access</a></li><li><a class="nav-link text-white" href="{{ url_for('portal.doctor_dashboard') }}">Consultations</a></li>{% endif %}
 
         <!-- Dashboard -->
 

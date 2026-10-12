@@ -7,6 +7,7 @@
 <hr>
 
 <form method="POST">
+<input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
 
 <div class="row">
 
@@ -139,6 +140,7 @@
     name="status"
     class="form-select">
 
+        <option value="Confirmed" {% if appointment.status=="Confirmed" %}selected{% endif %}>Confirmed</option>
         <option
         value="Pending"
         {% if appointment.status == "Pending" %}selected{% endif %}>

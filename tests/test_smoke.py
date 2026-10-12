@@ -24,6 +24,7 @@ class HospitalSmokeTests(unittest.TestCase):
                 "SQLALCHEMY_DATABASE_URI": f"sqlite:///{self.database_file.name}",
                 "SQLALCHEMY_ENGINE_OPTIONS": {},
                 "SESSION_COOKIE_SECURE": False,
+                "WTF_CSRF_ENABLED": False,
             }
         )
         self.client = self.app.test_client()
@@ -49,7 +50,7 @@ class HospitalSmokeTests(unittest.TestCase):
 
     def login(self):
         response = self.client.post(
-            "/",
+            "/staff/login",
             data={"email": "admin@example.com", "password": "safe-test-password"},
             follow_redirects=True,
         )

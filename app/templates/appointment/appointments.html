@@ -137,6 +137,7 @@
 <div class="card-body">
 
 <form method="GET">
+<input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
 
 <div class="row mb-3">
 
@@ -319,6 +320,7 @@
     action="{{ url_for('appointment.delete_appointment_route', id=appointment.id) }}"
     method="POST"
     class="d-inline">
+<input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
 
         <button
         type="submit"

@@ -11,15 +11,17 @@ auth_bp = Blueprint("auth", __name__)
 # ==========================
 # Login
 # ==========================
-@auth_bp.route("/", methods=["GET", "POST"])
+@auth_bp.route("/staff/login", methods=["GET", "POST"])
 def login():
 
     if current_user.is_authenticated:
-        return redirect(url_for("auth.dashboard"))
+        return redirect(url_for("portal.patient_dashboard" if current_user.role == "Patient" else "portal.doctor_dashboard" if current_user.role == "Doctor" else "auth.dashboard"))
 
     if request.method == "POST":
 
-        email = request.form["email"]
+        from app.portal import throttle
+        throttle("staff-login")
+        email = request.form["email"].strip().lower()
         password = request.form["password"]
 
         admin = Admin.query.filter_by(email=email).first()
@@ -30,7 +32,7 @@ def login():
 
             flash("Login Successful", "success")
 
-            return redirect(url_for("auth.dashboard"))
+            return redirect(url_for("portal.doctor_dashboard" if admin.role == "Doctor" else "auth.dashboard"))
 
         flash("Invalid Email or Password", "danger")
 

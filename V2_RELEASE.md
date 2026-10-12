@@ -1,0 +1,1 @@
+Hospital V2: verified patient portal, doctor consultations, private reports and atomic appointment slots. Pre-release backup: backup/pre-v2-2026-10-12. Automated validation: 12 tests pass. Email recovery requires SMTP; dashboard reminders are enabled.

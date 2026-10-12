@@ -68,6 +68,9 @@ def add_user():
         email = request.form["email"]
         password = request.form["password"]
         role = request.form["role"]
+        if role not in {"Admin", "Receptionist", "Pharmacist"}:
+            flash("Create doctor access through V2 schedules & access.", "warning")
+            return redirect(url_for("user.users"))
 
         existing = Admin.query.filter_by(
             email=email
@@ -123,6 +126,9 @@ def edit_user(id):
 
         user.full_name = request.form["full_name"]
         user.email = request.form["email"]
+        if request.form["role"] not in {"Admin", "Receptionist", "Pharmacist"} and not (user.role == "Doctor" and request.form["role"] == "Doctor"):
+            flash("Doctor roles are managed through V2 linked accounts.", "warning")
+            return redirect(url_for("user.users"))
         user.role = request.form["role"]
 
         password = request.form["password"]

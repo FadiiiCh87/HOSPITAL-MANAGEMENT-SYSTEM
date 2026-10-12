@@ -133,6 +133,7 @@
 
 
 <form method="GET">
+<input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
 
 <div class="row mb-4">
 
@@ -324,6 +325,7 @@
     action="{{ url_for('billing.delete_bill', id=bill.id) }}"
     method="POST"
     style="display:inline;">
+<input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
 
     <button
         type="submit"

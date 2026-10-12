@@ -7,6 +7,7 @@
 <hr>
 
 <form method="GET">
+<input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
 
 <div class="row mb-3">
 
@@ -108,6 +109,7 @@ class="btn btn-success mb-3">
                 action="{{ url_for('patient.delete_patient', id=patient.id) }}"
                 method="POST"
                 style="display:inline;">
+<input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
 
                     <button
                     type="submit"

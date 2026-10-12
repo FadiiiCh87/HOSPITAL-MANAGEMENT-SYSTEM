@@ -26,6 +26,7 @@
         <div class="card-body">
 
             <form method="POST">
+<input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
 
                 <div class="mb-3">
 
@@ -94,6 +95,7 @@
                         name="role"
                         class="form-select">
 
+                        {% if user.role == "Doctor" %}<option value="Doctor" selected>Doctor (linked account)</option>{% endif %}
                         <option value="Admin"
                             {% if user.role=="Admin" %}selected{% endif %}>
                             Admin

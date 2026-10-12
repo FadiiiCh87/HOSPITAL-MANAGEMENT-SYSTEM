@@ -35,6 +35,7 @@
     <div class="card-body p-4">
 
         <form method="POST">
+<input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
 
             <h5 class="border-bottom pb-2 mb-3 text-primary">
 
