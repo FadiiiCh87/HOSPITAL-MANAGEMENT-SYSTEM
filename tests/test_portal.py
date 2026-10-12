@@ -46,6 +46,19 @@ class PortalTests(unittest.TestCase):
         self.assertEqual(r.status_code,302)
         r=self.client.post('/patient/register',data={'name':'New Patient','email':'new@test.com','password':'test-password-123','next':f'/book?doctor=1&date={self.day}'},follow_redirects=True)
         self.assertIn(b'Preserved reason',r.data);self.assertIn(b'selected>09:30',r.data)
+    def test_patient_can_switch_to_staff_without_forbidden(self):
+        self.login()
+        response = self.client.get("/staff/login")
+        self.assertEqual(response.status_code, 200)
+        self.assertIn(b"Enter valid staff credentials", response.data)
+        response = self.client.post("/staff/login", data={"email":"admin@clinic.test", "password":"wrong"})
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(self.client.get("/patient/dashboard").status_code, 200)
+        response = self.login("admin")
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(self.client.get("/admin/portal").status_code, 200)
+        self.assertEqual(self.client.get("/patient/dashboard").status_code, 403)
+
     def test_patient_isolation_and_staff_denial(self):
         self.assertEqual(self.login().status_code,200)
         r=self.client.get('/patient/dashboard');self.assertNotIn(b'PRIVATE-BOB',r.data);self.assertNotIn(b'SECRET-BOB',r.data)
