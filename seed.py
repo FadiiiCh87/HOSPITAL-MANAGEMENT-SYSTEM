@@ -20,6 +20,11 @@ with app.app_context():
             db.session.commit()
 
     db.create_all()
+    # Additive V2 migration, run as the application schema owner.
+    from app.models.appointment import Appointment
+    for index in Appointment.__table__.indexes:
+        if index.name == "uq_active_doctor_slot":
+            index.create(bind=db.engine, checkfirst=True)
 
     admin_email = os.getenv("ADMIN_EMAIL", "admin@hospital.com").strip().lower()
     admin_password = os.getenv("ADMIN_PASSWORD")
