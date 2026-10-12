@@ -61,6 +61,8 @@ def create_app(test_config=None):
 
     @app.before_request
     def enforce_access():
+        if request.endpoint == "auth.login":
+            return
         if request.endpoint and request.endpoint.startswith(("portal.", "static")) or request.endpoint == "health":
             return
         if current_user.is_authenticated:
