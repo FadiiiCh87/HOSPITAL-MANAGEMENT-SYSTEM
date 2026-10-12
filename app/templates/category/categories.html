@@ -32,6 +32,7 @@
 </div>
 
 <form method="GET">
+<input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
 
 <div class="row mb-4">
 
@@ -157,6 +158,7 @@ class="btn btn-warning btn-sm">
 action="{{ url_for('category.delete_category', id=category.id) }}"
 method="POST"
 style="display:inline;">
+<input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
 
 <button
 type="submit"
