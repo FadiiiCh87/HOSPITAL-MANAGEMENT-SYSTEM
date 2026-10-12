@@ -2,6 +2,7 @@
 <html>
 
 <head>
+<meta name="viewport" content="width=device-width,initial-scale=1">
 
     <title>Hospital Login</title>
 
@@ -21,7 +22,7 @@
 
                 <div class="card-header text-center">
 
-                    <h3>Hospital Login</h3>
+                    <h3>Hospital Staff Login</h3>
 
                 </div>
 
@@ -42,6 +43,7 @@
 {% endwith %}
 
                     <form method="POST">
+<input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
 
                         <div class="mb-3">
 
