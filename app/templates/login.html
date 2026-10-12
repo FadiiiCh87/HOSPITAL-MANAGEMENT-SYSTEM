@@ -42,6 +42,9 @@
     {% endif %}
 {% endwith %}
 
+                    {% if current_user.is_authenticated and current_user.role == "Patient" %}
+                    <div class="alert alert-info">You are signed in as a patient. Enter valid staff credentials to switch to the staff workspace.</div>
+                    {% endif %}
                     <form method="POST">
 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
 
